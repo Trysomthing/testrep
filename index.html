@@ -18,8 +18,9 @@
   *{ margin:0; padding:0; box-sizing:border-box; }
 
   html,body{
-    height:100%;
-    overflow:hidden;
+    min-height:100%;
+    overflow-x:hidden;
+    overflow-y:auto;
   }
 
   body{
@@ -100,6 +101,27 @@
     align-items:center;
     gap:clamp(24px, 5vw, 48px);
     text-align:center;
+  }
+
+  .hug{
+    width:clamp(120px, 22vw, 190px);
+    filter:drop-shadow(0 10px 26px rgba(236,72,153,0.35));
+    animation:bob 6s ease-in-out infinite;
+  }
+
+  @keyframes bob{
+    0%,100%{ transform:translateY(0); }
+    50%{ transform:translateY(-8px); }
+  }
+
+  .heart{
+    transform-origin:120px 52px;
+    animation:pulse 1.6s ease-in-out infinite;
+  }
+
+  @keyframes pulse{
+    0%,100%{ transform:scale(1); }
+    50%{ transform:scale(1.14); }
   }
 
   .eyebrow{
@@ -240,6 +262,8 @@
   @media (prefers-reduced-motion: reduce){
     .orb{ animation:none; }
     .progress-bar{ animation:none; }
+    .hug{ animation:none; }
+    .heart{ animation:none; }
   }
 </style>
 </head>
@@ -251,6 +275,38 @@
   <div class="orb orb3"></div>
 
   <div class="stage">
+    <svg class="hug" viewBox="0 0 240 220" xmlns="http://www.w3.org/2000/svg" aria-label="Illustration of a couple hugging">
+      <defs>
+        <linearGradient id="gradA" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#a855f7"/>
+          <stop offset="100%" stop-color="#38bdf8"/>
+        </linearGradient>
+        <linearGradient id="gradB" x1="1" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#ec4899"/>
+          <stop offset="100%" stop-color="#a855f7"/>
+        </linearGradient>
+        <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#ec4899" stop-opacity="0.55"/>
+          <stop offset="100%" stop-color="#ec4899" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+
+      <ellipse cx="120" cy="152" rx="98" ry="55" fill="url(#glow)"/>
+
+      <!-- left figure -->
+      <path d="M60,206 C54,150 59,118 78,107 C69,94 71,77 90,71 C96,67 109,70 113,85 C119,101 111,121 119,141 C127,159 121,182 119,206 Z" fill="url(#gradA)"/>
+      <path d="M108,121 C121,112 139,113 149,123 C155,129 153,139 145,141 C132,144 116,137 108,129 Z" fill="url(#gradA)"/>
+      <circle cx="95" cy="65" r="21" fill="url(#gradA)"/>
+
+      <!-- right figure -->
+      <path d="M180,206 C186,150 181,118 162,107 C171,94 169,77 150,71 C144,67 131,70 127,85 C121,101 129,121 121,141 C113,159 119,182 121,206 Z" fill="url(#gradB)"/>
+      <path d="M132,121 C119,112 101,113 91,123 C85,129 87,139 95,141 C108,144 124,137 132,129 Z" fill="url(#gradB)"/>
+      <circle cx="145" cy="65" r="21" fill="url(#gradB)"/>
+
+      <!-- heart -->
+      <path class="heart" d="M120,38 C114,28 97,30 97,45 C97,58 120,73 120,73 C120,73 143,58 143,45 C143,30 126,28 120,38 Z" fill="#ec4899"/>
+    </svg>
+
     <div class="eyebrow">Countdown</div>
     <h1 id="title">Something big is coming</h1>
     <div class="subdate">Target &mdash; <span id="targetLabel"></span></div>
