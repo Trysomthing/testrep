@@ -719,10 +719,8 @@
 
   // -- Minimal self-contained GIF89a encoder --
   // Uses a fixed 256-color palette (3/3/2-bit RGB buckets) so every frame
-  // quantizes deterministically, and a "trivial" LZW encoder that always
-  // emits literal per-pixel codes while mirroring the decoder's dictionary
-  // bookkeeping bit-for-bit. It trades file size for guaranteed-correct,
-  // dependency-free output.
+  // quantizes deterministically, plus a standard dictionary-based LZW
+  // encoder (GIF-flavored). No external library or network access needed.
 
   function buildGifPalette(){
     const palette = new Uint8Array(256 * 3);
@@ -763,7 +761,7 @@
     }
   }
 
-  function lzwEncodeTrivial(indices){
+  function lzwEncode(indices){
     // Standard dictionary-based GIF LZW encoder (8-bit palette codes).
     // Encoder and decoder build the identical dictionary from the same
     // rules, so the bitstream is self-synchronizing by construction.
@@ -857,7 +855,7 @@
       bytes.push(0x00);
 
       bytes.push(8);
-      const packed = packSubBlocks(lzwEncodeTrivial(indices));
+      const packed = packSubBlocks(lzwEncode(indices));
       for (const b of packed) bytes.push(b);
     }
 
