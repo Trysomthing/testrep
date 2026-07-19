@@ -279,7 +279,7 @@
     left:50%;
     transform:translateX(-50%) translateY(-6px);
     min-width:230px;
-    background:rgba(20,10,40,0.85);
+    background:rgba(17,9,34,0.97);
     border:1px solid rgba(255,255,255,0.16);
     border-radius:16px;
     backdrop-filter:blur(20px);
@@ -297,6 +297,15 @@
   .cal-menu.open{
     opacity:1;
     pointer-events:auto;
+    transform:translateX(-50%) translateY(0);
+  }
+
+  .cal-menu.flip-up{
+    top:auto;
+    bottom:calc(100% + 12px);
+    transform:translateX(-50%) translateY(6px);
+  }
+  .cal-menu.flip-up.open{
     transform:translateX(-50%) translateY(0);
   }
 
@@ -320,6 +329,40 @@
   }
   .cal-option:hover{ background:rgba(255,255,255,0.09); }
   .cal-option svg{ width:16px; height:16px; flex-shrink:0; color:var(--muted); }
+
+  .cal-divider{
+    height:1px;
+    margin:4px 6px;
+    background:rgba(255,255,255,0.12);
+  }
+
+  .toast{
+    position:fixed;
+    left:50%;
+    bottom:28px;
+    transform:translateX(-50%) translateY(12px);
+    max-width:min(90vw, 360px);
+    padding:12px 18px;
+    background:rgba(20,10,40,0.92);
+    border:1px solid rgba(255,255,255,0.18);
+    border-radius:12px;
+    backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);
+    box-shadow:0 16px 40px rgba(0,0,0,0.45);
+    color:var(--text);
+    font-size:13.5px;
+    font-weight:600;
+    text-align:center;
+    line-height:1.4;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .25s ease, transform .25s ease;
+    z-index:50;
+  }
+  .toast.show{
+    opacity:1;
+    transform:translateX(-50%) translateY(0);
+  }
 
   .export-wrap{
     position:relative;
@@ -361,7 +404,8 @@
 
   .exporting .cal-wrap,
   .exporting .export-wrap,
-  .exporting footer{
+  .exporting footer,
+  .exporting .toast{
     visibility:hidden !important;
   }
   .exporting .card{
@@ -507,10 +551,21 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"></rect><path d="M7 10v4M11 10h1.5a1.5 1.5 0 010 3H11v-3zM17 10a2 2 0 100 4"></path></svg>
             Save as GIF (animated)
           </button>
+          <div class="cal-divider"></div>
+          <button class="cal-option" id="copyImageBtn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M16 8V5a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2h3"></path></svg>
+            <span id="copyImageBtnLabel">Copy Image to Clipboard</span>
+          </button>
+          <button class="cal-option" id="shareBtn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.6 10.6l6.8-3.9M8.6 13.4l6.8 3.9"></path></svg>
+            <span id="shareBtnLabel">Share… (WhatsApp, Telegram, Email)</span>
+          </button>
         </div>
       </div>
     </div>
   </div>
+
+  <div class="toast" id="toast"></div>
 
   <footer>Countdown &middot; local time</footer>
 
@@ -635,10 +690,19 @@
   const calBtn = document.getElementById('calBtn');
   const calMenu = document.getElementById('calMenu');
 
+  function positionMenu(menuEl){
+    menuEl.classList.remove('flip-up');
+    const rect = menuEl.getBoundingClientRect();
+    if (rect.bottom > window.innerHeight){
+      menuEl.classList.add('flip-up');
+    }
+  }
+
   calBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     const isOpen = calMenu.classList.toggle('open');
     calBtn.setAttribute('aria-expanded', String(isOpen));
+    if (isOpen) positionMenu(calMenu);
   });
 
   calMenu.addEventListener('click', (e) => e.stopPropagation());
@@ -712,9 +776,69 @@
     URL.revokeObjectURL(url);
   }
 
+  function buildPngBlob(scale){
+    return captureToCanvas(scale).then((canvas) =>
+      new Promise((resolve) => canvas.toBlob(resolve, 'image/png'))
+    );
+  }
+
   async function exportAsPNG(){
-    const canvas = await captureToCanvas(2);
-    canvas.toBlob((blob) => downloadBlob(blob, 'countdown.png'), 'image/png');
+    const blob = await buildPngBlob(2);
+    downloadBlob(blob, 'countdown.png');
+  }
+
+  // ---- Toast feedback ----
+  const toastEl = document.getElementById('toast');
+  let toastTimer = null;
+
+  function showToast(message, ms){
+    toastEl.textContent = message;
+    toastEl.classList.add('show');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), ms || 3200);
+  }
+
+  // ---- Copy Image to Clipboard ----
+  async function copyImageToClipboard(){
+    const blob = await buildPngBlob(2);
+    if (navigator.clipboard && window.ClipboardItem){
+      try {
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+        return true;
+      } catch (err){
+        // fall through to download fallback below
+      }
+    }
+    downloadBlob(blob, 'countdown.png');
+    return false;
+  }
+
+  // ---- Share to another app (native share sheet when available) ----
+  async function shareImage(){
+    const blob = await buildPngBlob(2);
+    const file = new File([blob], 'countdown.png', { type: 'image/png' });
+    const shareData = {
+      files: [file],
+      title: EVENT_TITLE,
+      text: `Countdown to ${EVENT_TITLE} — ${els.targetLabel.textContent}`,
+    };
+
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })){
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (err){
+        if (err && err.name === 'AbortError') return; // user cancelled the share sheet
+        // real failure: fall through to clipboard fallback
+      }
+    }
+
+    const copied = await copyImageToClipboard();
+    showToast(
+      copied
+        ? 'Sharing isn’t available in this browser — image copied. Paste it into WhatsApp, Telegram, or an email.'
+        : 'Sharing isn’t available in this browser — image downloaded instead.'
+    );
   }
 
   // -- Minimal self-contained GIF89a encoder --
@@ -899,6 +1023,7 @@
     const isOpen = exportMenu.classList.toggle('open');
     exportBtn.setAttribute('aria-expanded', String(isOpen));
     calMenu.classList.remove('open');
+    if (isOpen) positionMenu(exportMenu);
   });
 
   exportMenu.addEventListener('click', (e) => e.stopPropagation());
@@ -929,6 +1054,17 @@
 
   document.getElementById('exportGifBtn').addEventListener('click', () => {
     withBusyExport('Exporting…', exportAsGIF);
+  });
+
+  document.getElementById('copyImageBtn').addEventListener('click', () => {
+    withBusyExport('Exporting…', async () => {
+      const copied = await copyImageToClipboard();
+      showToast(copied ? 'Image copied to clipboard.' : 'Clipboard unavailable — image downloaded instead.');
+    });
+  });
+
+  document.getElementById('shareBtn').addEventListener('click', () => {
+    withBusyExport('Exporting…', shareImage);
   });
 </script>
 </body>
