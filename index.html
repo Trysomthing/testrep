@@ -28,9 +28,9 @@
   body{
     font-family:'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     background:
-      radial-gradient(ellipse at 20% 20%, rgba(168,85,247,0.35), transparent 55%),
-      radial-gradient(ellipse at 80% 30%, rgba(236,72,153,0.30), transparent 55%),
-      radial-gradient(ellipse at 50% 85%, rgba(56,189,248,0.25), transparent 55%),
+      radial-gradient(ellipse at 20% 20%, color-mix(in srgb, var(--accent-1) 35%, transparent), transparent 55%),
+      radial-gradient(ellipse at 80% 30%, color-mix(in srgb, var(--accent-2) 30%, transparent), transparent 55%),
+      radial-gradient(ellipse at 50% 85%, color-mix(in srgb, var(--accent-3) 25%, transparent), transparent 55%),
       linear-gradient(160deg, var(--bg-1), var(--bg-2));
     color:var(--text);
     display:flex;
@@ -559,6 +559,47 @@
   .field-row{ display:flex; gap:10px; }
   .field-row .field{ flex:1; margin-bottom:14px; }
 
+  .color-field{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+
+  label.checkbox-label{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:13px;
+    font-weight:600;
+    color:var(--muted);
+    text-transform:none;
+    letter-spacing:normal;
+    margin-bottom:0;
+    cursor:pointer;
+  }
+  .checkbox-label input[type="checkbox"]{
+    width:16px;
+    height:16px;
+    accent-color:var(--accent-3);
+    cursor:pointer;
+  }
+
+  .color-field input[type="color"]{
+    width:40px;
+    height:36px;
+    padding:2px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,0.18);
+    background:rgba(255,255,255,0.06);
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  .color-field input[type="color"]:disabled{
+    opacity:0.4;
+    cursor:not-allowed;
+  }
+
   .form-error{
     color:#fda4af;
     font-size:13px;
@@ -789,6 +830,13 @@
           <label for="newEventNotes">Notes <span class="optional">(optional)</span></label>
           <textarea id="newEventNotes" rows="2" placeholder="Anything worth remembering"></textarea>
         </div>
+        <div class="field color-field">
+          <label class="checkbox-label">
+            <input type="checkbox" id="useCustomColor">
+            Use a custom color <span class="optional">(otherwise auto-picked from the title)</span>
+          </label>
+          <input id="newEventColor" type="color" value="#a855f7" disabled>
+        </div>
         <div class="form-error" id="formError"></div>
         <div class="modal-actions">
           <button type="button" class="modal-btn ghost" id="cancelAddEvent">Cancel</button>
@@ -814,6 +862,7 @@
       createdAt: new Date(2026, 6, 16, 0, 0, 0).toISOString(),
       location: '',
       description: 'Countdown event, created from the countdown page.',
+      customColor: null,
     }];
   }
 
@@ -866,22 +915,26 @@
   // ---- Per-event visual theme, guessed from the title ----
   // "love" is also the fallback for anything that matches no keyword below,
   // so existing/seed events keep the original couple-hugging look.
+  // Illustration gradients reference the CSS accent variables directly, so
+  // the same recolor mechanism drives both auto-detected themes and a
+  // manually picked custom color (see deriveTriadFromColor below).
   const THEMES = {
     love: {
       colors: { a1: '#a855f7', a2: '#ec4899', a3: '#38bdf8' },
+      bg: { bg1: '#0a0118', bg2: '#1a0538' },
       svg: `
         <defs>
           <linearGradient id="gradA" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#a855f7"/>
-            <stop offset="100%" stop-color="#38bdf8"/>
+            <stop offset="0%" stop-color="var(--accent-1)"/>
+            <stop offset="100%" stop-color="var(--accent-3)"/>
           </linearGradient>
           <linearGradient id="gradB" x1="1" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#ec4899"/>
-            <stop offset="100%" stop-color="#a855f7"/>
+            <stop offset="0%" stop-color="var(--accent-2)"/>
+            <stop offset="100%" stop-color="var(--accent-1)"/>
           </linearGradient>
           <radialGradient id="glow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="#ec4899" stop-opacity="0.55"/>
-            <stop offset="100%" stop-color="#ec4899" stop-opacity="0"/>
+            <stop offset="0%" stop-color="var(--accent-2)" stop-opacity="0.55"/>
+            <stop offset="100%" stop-color="var(--accent-2)" stop-opacity="0"/>
           </radialGradient>
         </defs>
         <ellipse cx="120" cy="152" rx="98" ry="55" fill="url(#glow)"/>
@@ -891,29 +944,30 @@
         <path d="M180,206 C186,150 181,118 162,107 C171,94 169,77 150,71 C144,67 131,70 127,85 C121,101 129,121 121,141 C113,159 119,182 121,206 Z" fill="url(#gradB)"/>
         <path d="M132,121 C119,112 101,113 91,123 C85,129 87,139 95,141 C108,144 124,137 132,129 Z" fill="url(#gradB)"/>
         <circle cx="145" cy="65" r="21" fill="url(#gradB)"/>
-        <path class="heart" d="M120,38 C114,28 97,30 97,45 C97,58 120,73 120,73 C120,73 143,58 143,45 C143,30 126,28 120,38 Z" fill="#ec4899"/>
+        <path class="heart" d="M120,38 C114,28 97,30 97,45 C97,58 120,73 120,73 C120,73 143,58 143,45 C143,30 126,28 120,38 Z" fill="var(--accent-2)"/>
       `,
     },
     birthday: {
       keywords: ['birthday', 'bday', 'born'],
       colors: { a1: '#f97316', a2: '#facc15', a3: '#ec4899' },
+      bg: { bg1: '#1a0a02', bg2: '#2a1204' },
       svg: `
         <defs>
           <linearGradient id="gradA" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#f97316"/>
-            <stop offset="100%" stop-color="#facc15"/>
+            <stop offset="0%" stop-color="var(--accent-1)"/>
+            <stop offset="100%" stop-color="var(--accent-2)"/>
           </linearGradient>
           <linearGradient id="gradB" x1="1" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#ec4899"/>
-            <stop offset="100%" stop-color="#f97316"/>
+            <stop offset="0%" stop-color="var(--accent-3)"/>
+            <stop offset="100%" stop-color="var(--accent-1)"/>
           </linearGradient>
           <linearGradient id="gradC" x1="0" y1="1" x2="1" y2="0">
-            <stop offset="0%" stop-color="#facc15"/>
-            <stop offset="100%" stop-color="#ec4899"/>
+            <stop offset="0%" stop-color="var(--accent-2)"/>
+            <stop offset="100%" stop-color="var(--accent-3)"/>
           </linearGradient>
           <radialGradient id="glow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="#facc15" stop-opacity="0.5"/>
-            <stop offset="100%" stop-color="#facc15" stop-opacity="0"/>
+            <stop offset="0%" stop-color="var(--accent-2)" stop-opacity="0.5"/>
+            <stop offset="100%" stop-color="var(--accent-2)" stop-opacity="0"/>
           </radialGradient>
         </defs>
         <ellipse cx="120" cy="140" rx="100" ry="55" fill="url(#glow)"/>
@@ -929,30 +983,31 @@
         <ellipse cx="75" cy="82" rx="7" ry="10" fill="rgba(255,255,255,0.35)"/>
         <ellipse cx="141" cy="70" rx="6" ry="9" fill="rgba(255,255,255,0.32)"/>
         <ellipse cx="111" cy="107" rx="5" ry="7" fill="rgba(255,255,255,0.3)"/>
-        <rect x="45" y="55" width="6" height="6" fill="#ec4899" transform="rotate(20 48 58)"/>
-        <rect x="190" y="70" width="6" height="6" fill="#38bdf8" transform="rotate(-15 193 73)"/>
-        <circle cx="65" cy="150" r="4" fill="#facc15"/>
-        <circle cx="180" cy="130" r="4" fill="#f97316"/>
-        <rect x="30" y="120" width="5" height="5" fill="#facc15" transform="rotate(35 32 122)"/>
-        <circle cx="200" cy="100" r="3.5" fill="#ec4899"/>
+        <rect x="45" y="55" width="6" height="6" fill="var(--accent-3)" transform="rotate(20 48 58)"/>
+        <rect x="190" y="70" width="6" height="6" fill="var(--accent-1)" transform="rotate(-15 193 73)"/>
+        <circle cx="65" cy="150" r="4" fill="var(--accent-2)"/>
+        <circle cx="180" cy="130" r="4" fill="var(--accent-1)"/>
+        <rect x="30" y="120" width="5" height="5" fill="var(--accent-2)" transform="rotate(35 32 122)"/>
+        <circle cx="200" cy="100" r="3.5" fill="var(--accent-3)"/>
       `,
     },
     travel: {
       keywords: ['trip', 'travel', 'flight', 'vacation', 'holiday', 'cruise', 'journey', 'getaway'],
       colors: { a1: '#38bdf8', a2: '#818cf8', a3: '#facc15' },
+      bg: { bg1: '#020a18', bg2: '#0a1638' },
       svg: `
         <defs>
           <linearGradient id="gradA" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#38bdf8"/>
-            <stop offset="100%" stop-color="#818cf8"/>
+            <stop offset="0%" stop-color="var(--accent-1)"/>
+            <stop offset="100%" stop-color="var(--accent-2)"/>
           </linearGradient>
           <linearGradient id="gradB" x1="1" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#818cf8"/>
-            <stop offset="100%" stop-color="#facc15"/>
+            <stop offset="0%" stop-color="var(--accent-2)"/>
+            <stop offset="100%" stop-color="var(--accent-3)"/>
           </linearGradient>
           <radialGradient id="glow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.5"/>
-            <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+            <stop offset="0%" stop-color="var(--accent-1)" stop-opacity="0.5"/>
+            <stop offset="100%" stop-color="var(--accent-1)" stop-opacity="0"/>
           </radialGradient>
         </defs>
         <ellipse cx="120" cy="130" rx="100" ry="55" fill="url(#glow)"/>
@@ -968,19 +1023,20 @@
     work: {
       keywords: ['launch', 'deadline', 'work', 'meeting', 'interview', 'exam', 'presentation', 'project', 'conference', 'release', 'demo', 'graduation'],
       colors: { a1: '#34d399', a2: '#38bdf8', a3: '#a855f7' },
+      bg: { bg1: '#021208', bg2: '#04241a' },
       svg: `
         <defs>
           <linearGradient id="gradA" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#38bdf8"/>
-            <stop offset="100%" stop-color="#34d399"/>
+            <stop offset="0%" stop-color="var(--accent-2)"/>
+            <stop offset="100%" stop-color="var(--accent-1)"/>
           </linearGradient>
           <linearGradient id="gradB" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#a855f7"/>
-            <stop offset="100%" stop-color="#38bdf8"/>
+            <stop offset="0%" stop-color="var(--accent-3)"/>
+            <stop offset="100%" stop-color="var(--accent-2)"/>
           </linearGradient>
           <radialGradient id="glow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="#34d399" stop-opacity="0.5"/>
-            <stop offset="100%" stop-color="#34d399" stop-opacity="0"/>
+            <stop offset="0%" stop-color="var(--accent-1)" stop-opacity="0.5"/>
+            <stop offset="100%" stop-color="var(--accent-1)" stop-opacity="0"/>
           </radialGradient>
         </defs>
         <ellipse cx="120" cy="150" rx="95" ry="55" fill="url(#glow)"/>
@@ -1008,11 +1064,75 @@
     return THEMES.love;
   }
 
-  function applyTheme(theme){
+  // ---- Deriving a full palette from one manually picked color ----
+  function hexToHsl(hex){
+    const r = parseInt(hex.slice(1, 3), 16) / 255;
+    const g = parseInt(hex.slice(3, 5), 16) / 255;
+    const b = parseInt(hex.slice(5, 7), 16) / 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h = 0, s = 0;
+    const l = (max + min) / 2;
+    const d = max - min;
+    if (d !== 0){
+      s = d / (1 - Math.abs(2 * l - 1));
+      switch (max){
+        case r: h = ((g - b) / d) % 6; break;
+        case g: h = (b - r) / d + 2; break;
+        default: h = (r - g) / d + 4; break;
+      }
+      h *= 60;
+      if (h < 0) h += 360;
+    }
+    return { h, s: s * 100, l: l * 100 };
+  }
+
+  function hslToHex(h, s, l){
+    h = ((h % 360) + 360) % 360;
+    s /= 100; l /= 100;
+    const c = (1 - Math.abs(2 * l - 1)) * s;
+    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+    const m = l - c / 2;
+    let r = 0, g = 0, b = 0;
+    if (h < 60){ r = c; g = x; }
+    else if (h < 120){ r = x; g = c; }
+    else if (h < 180){ g = c; b = x; }
+    else if (h < 240){ g = x; b = c; }
+    else if (h < 300){ r = x; b = c; }
+    else { r = c; b = x; }
+    const toHex = (v) => Math.round((v + m) * 255).toString(16).padStart(2, '0');
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  }
+
+  function deriveTriadFromColor(hex){
+    // Mirrors the spread of the original hand-picked palette (purple/pink/blue,
+    // roughly +55°/-70° apart) rather than a harsh 120° primary-color triad.
+    const { h, s, l } = hexToHsl(hex);
+    const sat = Math.min(90, Math.max(55, s));
+    const light = Math.min(72, Math.max(50, l));
+    return {
+      a1: hex,
+      a2: hslToHex(h + 55, sat, Math.min(78, light + 6)),
+      a3: hslToHex(h - 70, sat * 0.9, Math.min(75, light + 3)),
+    };
+  }
+
+  function deriveBgFromColor(hex){
+    const { h } = hexToHsl(hex);
+    return {
+      bg1: hslToHex(h, 55, 6),
+      bg2: hslToHex(h + 15, 50, 12),
+    };
+  }
+
+  function applyTheme(theme, customColor){
+    const colors = customColor ? deriveTriadFromColor(customColor) : theme.colors;
+    const bg = customColor ? deriveBgFromColor(customColor) : theme.bg;
     const root = document.documentElement.style;
-    root.setProperty('--accent-1', theme.colors.a1);
-    root.setProperty('--accent-2', theme.colors.a2);
-    root.setProperty('--accent-3', theme.colors.a3);
+    root.setProperty('--accent-1', colors.a1);
+    root.setProperty('--accent-2', colors.a2);
+    root.setProperty('--accent-3', colors.a3);
+    root.setProperty('--bg-1', bg.bg1);
+    root.setProperty('--bg-2', bg.bg2);
     document.getElementById('hugSvg').innerHTML = theme.svg;
   }
 
@@ -1028,7 +1148,7 @@
     const startDate = new Date(ev.createdAt);
     const endDate = new Date(targetDate.getTime() + EVENT_DURATION_HOURS * 3600 * 1000);
 
-    applyTheme(pickTheme(ev.title));
+    applyTheme(pickTheme(ev.title), ev.customColor);
 
     currentEvent = ev;
     currentTargetDate = targetDate;
@@ -1162,10 +1282,17 @@
   const addEventBackdrop = document.getElementById('addEventBackdrop');
   const addEventForm = document.getElementById('addEventForm');
   const formError = document.getElementById('formError');
+  const useCustomColorCheckbox = document.getElementById('useCustomColor');
+  const newEventColorInput = document.getElementById('newEventColor');
+
+  useCustomColorCheckbox.addEventListener('change', () => {
+    newEventColorInput.disabled = !useCustomColorCheckbox.checked;
+  });
 
   function openAddEventModal(){
     formError.textContent = '';
     addEventForm.reset();
+    newEventColorInput.disabled = true;
     addEventBackdrop.classList.add('open');
     document.getElementById('newEventTitle').focus();
   }
@@ -1192,6 +1319,8 @@
     const timeStr = document.getElementById('newEventTime').value;
     const location = document.getElementById('newEventLocation').value.trim();
     const notes = document.getElementById('newEventNotes').value.trim();
+    const useCustomColor = document.getElementById('useCustomColor').checked;
+    const customColor = useCustomColor ? document.getElementById('newEventColor').value : null;
 
     if (!title){
       formError.textContent = 'Please enter a title.';
@@ -1218,6 +1347,7 @@
       createdAt: new Date().toISOString(),
       location,
       description: notes || 'Countdown event, created from the countdown page.',
+      customColor,
     };
 
     events.push(newEvent);
