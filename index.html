@@ -645,7 +645,7 @@
   <div class="stage">
     <div class="events-bar" id="eventsBar"></div>
 
-    <svg class="hug" viewBox="0 0 240 220" xmlns="http://www.w3.org/2000/svg" aria-label="Illustration of a couple hugging">
+    <svg class="hug" id="hugSvg" viewBox="0 0 240 220" xmlns="http://www.w3.org/2000/svg" aria-label="Illustration for this countdown">
       <defs>
         <linearGradient id="gradA" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stop-color="#a855f7"/>
@@ -863,6 +863,159 @@
 
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
+  // ---- Per-event visual theme, guessed from the title ----
+  // "love" is also the fallback for anything that matches no keyword below,
+  // so existing/seed events keep the original couple-hugging look.
+  const THEMES = {
+    love: {
+      colors: { a1: '#a855f7', a2: '#ec4899', a3: '#38bdf8' },
+      svg: `
+        <defs>
+          <linearGradient id="gradA" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#a855f7"/>
+            <stop offset="100%" stop-color="#38bdf8"/>
+          </linearGradient>
+          <linearGradient id="gradB" x1="1" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#ec4899"/>
+            <stop offset="100%" stop-color="#a855f7"/>
+          </linearGradient>
+          <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#ec4899" stop-opacity="0.55"/>
+            <stop offset="100%" stop-color="#ec4899" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <ellipse cx="120" cy="152" rx="98" ry="55" fill="url(#glow)"/>
+        <path d="M60,206 C54,150 59,118 78,107 C69,94 71,77 90,71 C96,67 109,70 113,85 C119,101 111,121 119,141 C127,159 121,182 119,206 Z" fill="url(#gradA)"/>
+        <path d="M108,121 C121,112 139,113 149,123 C155,129 153,139 145,141 C132,144 116,137 108,129 Z" fill="url(#gradA)"/>
+        <circle cx="95" cy="65" r="21" fill="url(#gradA)"/>
+        <path d="M180,206 C186,150 181,118 162,107 C171,94 169,77 150,71 C144,67 131,70 127,85 C121,101 129,121 121,141 C113,159 119,182 121,206 Z" fill="url(#gradB)"/>
+        <path d="M132,121 C119,112 101,113 91,123 C85,129 87,139 95,141 C108,144 124,137 132,129 Z" fill="url(#gradB)"/>
+        <circle cx="145" cy="65" r="21" fill="url(#gradB)"/>
+        <path class="heart" d="M120,38 C114,28 97,30 97,45 C97,58 120,73 120,73 C120,73 143,58 143,45 C143,30 126,28 120,38 Z" fill="#ec4899"/>
+      `,
+    },
+    birthday: {
+      keywords: ['birthday', 'bday', 'born'],
+      colors: { a1: '#f97316', a2: '#facc15', a3: '#ec4899' },
+      svg: `
+        <defs>
+          <linearGradient id="gradA" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#f97316"/>
+            <stop offset="100%" stop-color="#facc15"/>
+          </linearGradient>
+          <linearGradient id="gradB" x1="1" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#ec4899"/>
+            <stop offset="100%" stop-color="#f97316"/>
+          </linearGradient>
+          <linearGradient id="gradC" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0%" stop-color="#facc15"/>
+            <stop offset="100%" stop-color="#ec4899"/>
+          </linearGradient>
+          <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#facc15" stop-opacity="0.5"/>
+            <stop offset="100%" stop-color="#facc15" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <ellipse cx="120" cy="140" rx="100" ry="55" fill="url(#glow)"/>
+        <path d="M85,150 C90,175 100,190 118,198" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="2"/>
+        <path d="M150,140 C148,168 138,188 122,198" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="2"/>
+        <path d="M118,170 C119,182 120,190 120,198" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="2"/>
+        <ellipse cx="85" cy="95" rx="30" ry="38" fill="url(#gradA)"/>
+        <path d="M78,131 L92,131 L85,144 Z" fill="url(#gradA)"/>
+        <ellipse cx="150" cy="82" rx="27" ry="35" fill="url(#gradB)"/>
+        <path d="M143,115 L157,115 L150,128 Z" fill="url(#gradB)"/>
+        <ellipse cx="118" cy="118" rx="22" ry="28" fill="url(#gradC)"/>
+        <path d="M112,144 L124,144 L118,155 Z" fill="url(#gradC)"/>
+        <ellipse cx="75" cy="82" rx="7" ry="10" fill="rgba(255,255,255,0.35)"/>
+        <ellipse cx="141" cy="70" rx="6" ry="9" fill="rgba(255,255,255,0.32)"/>
+        <ellipse cx="111" cy="107" rx="5" ry="7" fill="rgba(255,255,255,0.3)"/>
+        <rect x="45" y="55" width="6" height="6" fill="#ec4899" transform="rotate(20 48 58)"/>
+        <rect x="190" y="70" width="6" height="6" fill="#38bdf8" transform="rotate(-15 193 73)"/>
+        <circle cx="65" cy="150" r="4" fill="#facc15"/>
+        <circle cx="180" cy="130" r="4" fill="#f97316"/>
+        <rect x="30" y="120" width="5" height="5" fill="#facc15" transform="rotate(35 32 122)"/>
+        <circle cx="200" cy="100" r="3.5" fill="#ec4899"/>
+      `,
+    },
+    travel: {
+      keywords: ['trip', 'travel', 'flight', 'vacation', 'holiday', 'cruise', 'journey', 'getaway'],
+      colors: { a1: '#38bdf8', a2: '#818cf8', a3: '#facc15' },
+      svg: `
+        <defs>
+          <linearGradient id="gradA" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#38bdf8"/>
+            <stop offset="100%" stop-color="#818cf8"/>
+          </linearGradient>
+          <linearGradient id="gradB" x1="1" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#818cf8"/>
+            <stop offset="100%" stop-color="#facc15"/>
+          </linearGradient>
+          <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.5"/>
+            <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <ellipse cx="120" cy="130" rx="100" ry="55" fill="url(#glow)"/>
+        <ellipse cx="55" cy="150" rx="26" ry="12" fill="rgba(255,255,255,0.18)"/>
+        <ellipse cx="72" cy="142" rx="18" ry="10" fill="rgba(255,255,255,0.18)"/>
+        <ellipse cx="185" cy="90" rx="22" ry="10" fill="rgba(255,255,255,0.14)"/>
+        <path d="M40,150 C70,140 95,128 118,116" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 10"/>
+        <path d="M55,168 C82,156 100,142 118,128" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 10"/>
+        <path d="M118,60 L188,150 L120,132 L102,168 L96,120 Z" fill="url(#gradA)"/>
+        <path d="M118,60 L120,132 L102,168 Z" fill="url(#gradB)" opacity="0.85"/>
+      `,
+    },
+    work: {
+      keywords: ['launch', 'deadline', 'work', 'meeting', 'interview', 'exam', 'presentation', 'project', 'conference', 'release', 'demo', 'graduation'],
+      colors: { a1: '#34d399', a2: '#38bdf8', a3: '#a855f7' },
+      svg: `
+        <defs>
+          <linearGradient id="gradA" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#38bdf8"/>
+            <stop offset="100%" stop-color="#34d399"/>
+          </linearGradient>
+          <linearGradient id="gradB" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#a855f7"/>
+            <stop offset="100%" stop-color="#38bdf8"/>
+          </linearGradient>
+          <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#34d399" stop-opacity="0.5"/>
+            <stop offset="100%" stop-color="#34d399" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <ellipse cx="120" cy="150" rx="95" ry="55" fill="url(#glow)"/>
+        <circle cx="55" cy="60" r="2.5" fill="rgba(255,255,255,0.6)"/>
+        <circle cx="185" cy="50" r="2" fill="rgba(255,255,255,0.5)"/>
+        <circle cx="195" cy="110" r="2.5" fill="rgba(255,255,255,0.5)"/>
+        <circle cx="45" cy="110" r="2" fill="rgba(255,255,255,0.45)"/>
+        <path d="M108,175 C104,190 108,205 120,212 C132,205 136,190 132,175 Z" fill="url(#gradB)"/>
+        <path d="M120,45 C142,70 148,110 144,155 L96,155 C92,110 98,70 120,45 Z" fill="url(#gradA)"/>
+        <circle cx="120" cy="100" r="12" fill="rgba(255,255,255,0.85)"/>
+        <circle cx="120" cy="100" r="8" fill="#0a0118"/>
+        <path d="M96,155 L70,175 L96,130 Z" fill="url(#gradB)"/>
+        <path d="M144,155 L170,175 L144,130 Z" fill="url(#gradB)"/>
+      `,
+    },
+  };
+
+  const THEME_PRIORITY = ['birthday', 'travel', 'work'];
+
+  function pickTheme(title){
+    const lower = (title || '').toLowerCase();
+    for (const key of THEME_PRIORITY){
+      if (THEMES[key].keywords.some((kw) => lower.includes(kw))) return THEMES[key];
+    }
+    return THEMES.love;
+  }
+
+  function applyTheme(theme){
+    const root = document.documentElement.style;
+    root.setProperty('--accent-1', theme.colors.a1);
+    root.setProperty('--accent-2', theme.colors.a2);
+    root.setProperty('--accent-3', theme.colors.a3);
+    document.getElementById('hugSvg').innerHTML = theme.svg;
+  }
+
   // Populated by applyActiveEvent() and read by the calendar/share actions below.
   let currentEvent = null;
   let currentTargetDate = null;
@@ -874,6 +1027,8 @@
     const targetDate = new Date(ev.date);
     const startDate = new Date(ev.createdAt);
     const endDate = new Date(targetDate.getTime() + EVENT_DURATION_HOURS * 3600 * 1000);
+
+    applyTheme(pickTheme(ev.title));
 
     currentEvent = ev;
     currentTargetDate = targetDate;
