@@ -17,6 +17,8 @@
 
   *{ margin:0; padding:0; box-sizing:border-box; }
 
+  html{ color-scheme:dark; }
+
   html,body{
     min-height:100%;
     overflow-x:hidden;
@@ -402,10 +404,202 @@
     gap:14px;
   }
 
+  .events-bar{
+    width:100%;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    overflow-x:auto;
+    padding:2px 2px 6px;
+  }
+  .events-bar::-webkit-scrollbar{ height:6px; }
+  .events-bar::-webkit-scrollbar-thumb{ background:rgba(255,255,255,0.2); border-radius:999px; }
+
+  .event-chip{
+    flex-shrink:0;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:9px 8px 9px 16px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,0.14);
+    background:rgba(255,255,255,0.05);
+    color:var(--muted);
+    font-family:inherit;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    white-space:nowrap;
+    transition:background .2s ease, border-color .2s ease, color .2s ease;
+  }
+  .event-chip:hover{ background:rgba(255,255,255,0.1); }
+  .event-chip.active{
+    background:linear-gradient(90deg, rgba(168,85,247,0.4), rgba(56,189,248,0.32));
+    border-color:rgba(255,255,255,0.4);
+    color:var(--text);
+  }
+
+  .event-chip-date{
+    opacity:0.75;
+    font-weight:500;
+    font-size:12px;
+  }
+
+  .event-chip-delete{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:18px;
+    height:18px;
+    border-radius:50%;
+    font-size:14px;
+    line-height:1;
+    opacity:0.5;
+    transition:opacity .15s ease, background .15s ease;
+  }
+  .event-chip-delete:hover{ opacity:1; background:rgba(255,255,255,0.18); }
+
+  .add-event-btn{
+    flex-shrink:0;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    height:36px;
+    padding:0 16px;
+    border-radius:999px;
+    border:1px dashed rgba(255,255,255,0.35);
+    background:transparent;
+    color:var(--text);
+    font-family:inherit;
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+    transition:background .2s ease, border-color .2s ease;
+  }
+  .add-event-btn:hover{ background:rgba(255,255,255,0.09); border-color:rgba(255,255,255,0.55); }
+  .add-event-btn svg{ width:15px; height:15px; flex-shrink:0; }
+
+  .modal-backdrop{
+    position:fixed;
+    inset:0;
+    background:rgba(5,2,14,0.72);
+    backdrop-filter:blur(6px);
+    -webkit-backdrop-filter:blur(6px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .2s ease;
+    z-index:100;
+  }
+  .modal-backdrop.open{ opacity:1; pointer-events:auto; }
+
+  .modal-card{
+    width:100%;
+    max-width:400px;
+    background:rgba(19,10,38,0.98);
+    border:1px solid rgba(255,255,255,0.16);
+    border-radius:20px;
+    padding:26px;
+    box-shadow:0 24px 60px rgba(0,0,0,0.5);
+    transform:translateY(14px) scale(0.98);
+    transition:transform .25s ease;
+    text-align:left;
+  }
+  .modal-backdrop.open .modal-card{ transform:translateY(0) scale(1); }
+
+  .modal-card h2{
+    font-size:20px;
+    font-weight:800;
+    margin-bottom:18px;
+    background:linear-gradient(90deg, #fff, var(--accent-3));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+
+  .field{ margin-bottom:14px; }
+  .field label{
+    display:block;
+    font-size:11.5px;
+    font-weight:700;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:6px;
+  }
+  .field label .optional{
+    text-transform:none;
+    font-weight:500;
+    letter-spacing:0;
+    opacity:0.7;
+  }
+
+  .field input, .field textarea{
+    width:100%;
+    padding:11px 14px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,0.18);
+    background:rgba(255,255,255,0.06);
+    color:var(--text);
+    font-family:inherit;
+    font-size:14px;
+    resize:none;
+  }
+  .field input::placeholder, .field textarea::placeholder{ color:rgba(185,169,214,0.5); }
+  .field input:focus, .field textarea:focus{
+    outline:none;
+    border-color:var(--accent-3);
+    box-shadow:0 0 0 3px rgba(56,189,248,0.25);
+  }
+
+  .field-row{ display:flex; gap:10px; }
+  .field-row .field{ flex:1; margin-bottom:14px; }
+
+  .form-error{
+    color:#fda4af;
+    font-size:13px;
+    font-weight:600;
+    min-height:18px;
+    margin-bottom:2px;
+  }
+
+  .modal-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:8px;
+  }
+  .modal-btn{
+    padding:10px 20px;
+    border-radius:999px;
+    font-family:inherit;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    border:none;
+  }
+  .modal-btn.ghost{
+    background:transparent;
+    color:var(--muted);
+    border:1px solid rgba(255,255,255,0.18);
+  }
+  .modal-btn.ghost:hover{ background:rgba(255,255,255,0.08); }
+  .modal-btn.primary{
+    background:linear-gradient(90deg, var(--accent-3), var(--accent-1));
+    color:#0a0118;
+  }
+  .modal-btn.primary:hover{ filter:brightness(1.08); }
+
   .exporting .cal-wrap,
   .exporting .export-wrap,
   .exporting footer,
-  .exporting .toast{
+  .exporting .toast,
+  .exporting .events-bar,
+  .exporting .modal-backdrop{
     visibility:hidden !important;
   }
   .exporting .card{
@@ -449,6 +643,8 @@
   <div class="orb orb3"></div>
 
   <div class="stage">
+    <div class="events-bar" id="eventsBar"></div>
+
     <svg class="hug" viewBox="0 0 240 220" xmlns="http://www.w3.org/2000/svg" aria-label="Illustration of a couple hugging">
       <defs>
         <linearGradient id="gradA" x1="0" y1="0" x2="1" y2="1">
@@ -567,20 +763,88 @@
 
   <div class="toast" id="toast"></div>
 
+  <div class="modal-backdrop" id="addEventBackdrop">
+    <div class="modal-card">
+      <h2>New Countdown</h2>
+      <form id="addEventForm">
+        <div class="field">
+          <label for="newEventTitle">Title</label>
+          <input id="newEventTitle" type="text" placeholder="e.g. Sarah's Birthday" maxlength="80" autocomplete="off">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="newEventDate">Date</label>
+            <input id="newEventDate" type="date">
+          </div>
+          <div class="field">
+            <label for="newEventTime">Time</label>
+            <input id="newEventTime" type="time">
+          </div>
+        </div>
+        <div class="field">
+          <label for="newEventLocation">Location <span class="optional">(optional)</span></label>
+          <input id="newEventLocation" type="text" placeholder="e.g. Grandma's house" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="newEventNotes">Notes <span class="optional">(optional)</span></label>
+          <textarea id="newEventNotes" rows="2" placeholder="Anything worth remembering"></textarea>
+        </div>
+        <div class="form-error" id="formError"></div>
+        <div class="modal-actions">
+          <button type="button" class="modal-btn ghost" id="cancelAddEvent">Cancel</button>
+          <button type="submit" class="modal-btn primary">Add Event</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <footer>Countdown &middot; local time</footer>
 
 <script>
-  // ---- Configure your countdown here ----
-  const TARGET_DATE = new Date(2026, 6, 29, 16, 0, 0); // July 29, 2026, 16:00 local time
-  const START_DATE  = new Date(2026, 6, 16, 0, 0, 0);  // for progress bar baseline
-
-  const EVENT_TITLE       = document.getElementById('title').textContent;
-  const EVENT_DESCRIPTION = 'Countdown event, created from the countdown page.';
-  const EVENT_LOCATION    = '';
+  // ---- Multiple events, persisted in this browser ----
+  const STORAGE_EVENTS = 'countdown_events_v1';
+  const STORAGE_ACTIVE = 'countdown_active_id_v1';
   const EVENT_DURATION_HOURS = 1;
-  // ----------------------------------------
+
+  function defaultEvents(){
+    return [{
+      id: 'seed-1',
+      title: 'Something big is coming',
+      date: new Date(2026, 6, 29, 16, 0, 0).toISOString(),
+      createdAt: new Date(2026, 6, 16, 0, 0, 0).toISOString(),
+      location: '',
+      description: 'Countdown event, created from the countdown page.',
+    }];
+  }
+
+  function loadEvents(){
+    try {
+      const raw = localStorage.getItem(STORAGE_EVENTS);
+      const parsed = raw ? JSON.parse(raw) : null;
+      if (Array.isArray(parsed) && parsed.length) return parsed;
+    } catch (err){ /* fall through to defaults */ }
+    return defaultEvents();
+  }
+
+  function saveEvents(){
+    localStorage.setItem(STORAGE_EVENTS, JSON.stringify(events));
+  }
+
+  let events = loadEvents();
+  let activeId = localStorage.getItem(STORAGE_ACTIVE) || events[0].id;
+  if (!events.some((e) => e.id === activeId)) activeId = events[0].id;
+
+  function setActiveId(id){
+    activeId = id;
+    localStorage.setItem(STORAGE_ACTIVE, activeId);
+  }
+
+  function getActiveEvent(){
+    return events.find((e) => e.id === activeId) || events[0];
+  }
 
   const els = {
+    title: document.getElementById('title'),
     days: document.getElementById('days'),
     hours: document.getElementById('hours'),
     minutes: document.getElementById('minutes'),
@@ -591,53 +855,6 @@
     targetLabel: document.getElementById('targetLabel'),
   };
 
-  els.targetLabel.textContent = TARGET_DATE.toLocaleString(undefined, {
-    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-    hour: '2-digit', minute: '2-digit'
-  });
-
-  const pad = n => String(n).padStart(2, '0');
-
-  function tick(){
-    const now = new Date();
-    const diff = TARGET_DATE - now;
-
-    if (diff <= 0){
-      els.days.textContent = '00';
-      els.hours.textContent = '00';
-      els.minutes.textContent = '00';
-      els.seconds.textContent = '00';
-      els.progress.style.width = '100%';
-      els.grid.style.opacity = '0.35';
-      els.done.style.display = 'block';
-      clearInterval(timer);
-      return;
-    }
-
-    const totalSeconds = Math.floor(diff / 1000);
-    const d = Math.floor(totalSeconds / 86400);
-    const h = Math.floor((totalSeconds % 86400) / 3600);
-    const m = Math.floor((totalSeconds % 3600) / 60);
-    const s = totalSeconds % 60;
-
-    els.days.textContent = pad(d);
-    els.hours.textContent = pad(h);
-    els.minutes.textContent = pad(m);
-    els.seconds.textContent = pad(s);
-
-    const total = TARGET_DATE - START_DATE;
-    const elapsed = now - START_DATE;
-    const pct = Math.min(100, Math.max(0, (elapsed / total) * 100));
-    els.progress.style.width = pct + '%';
-  }
-
-  tick();
-  const timer = setInterval(tick, 1000);
-
-  // ---- Add to Calendar ----
-  const eventStart = TARGET_DATE;
-  const eventEnd = new Date(TARGET_DATE.getTime() + EVENT_DURATION_HOURS * 3600 * 1000);
-
   function pad2(n){ return String(n).padStart(2, '0'); }
 
   function toCalDateString(d){
@@ -646,19 +863,224 @@
 
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-  const googleCalUrl =
-    'https://calendar.google.com/calendar/render?action=TEMPLATE' +
-    `&text=${encodeURIComponent(EVENT_TITLE)}` +
-    `&dates=${toCalDateString(eventStart)}/${toCalDateString(eventEnd)}` +
-    `&details=${encodeURIComponent(EVENT_DESCRIPTION)}` +
-    `&location=${encodeURIComponent(EVENT_LOCATION)}` +
-    `&ctz=${encodeURIComponent(timeZone)}`;
+  // Populated by applyActiveEvent() and read by the calendar/share actions below.
+  let currentEvent = null;
+  let currentTargetDate = null;
+  let currentEndDate = null;
+  let timer = null;
 
-  document.getElementById('googleCalLink').href = googleCalUrl;
+  function applyActiveEvent(){
+    const ev = getActiveEvent();
+    const targetDate = new Date(ev.date);
+    const startDate = new Date(ev.createdAt);
+    const endDate = new Date(targetDate.getTime() + EVENT_DURATION_HOURS * 3600 * 1000);
 
+    currentEvent = ev;
+    currentTargetDate = targetDate;
+    currentEndDate = endDate;
+
+    els.title.textContent = ev.title;
+    document.title = `${ev.title} — Countdown`;
+    els.targetLabel.textContent = targetDate.toLocaleString(undefined, {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+    els.done.style.display = 'none';
+    els.grid.style.opacity = '1';
+
+    document.getElementById('googleCalLink').href =
+      'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+      `&text=${encodeURIComponent(ev.title)}` +
+      `&dates=${toCalDateString(targetDate)}/${toCalDateString(endDate)}` +
+      `&details=${encodeURIComponent(ev.description || '')}` +
+      `&location=${encodeURIComponent(ev.location || '')}` +
+      `&ctz=${encodeURIComponent(timeZone)}`;
+
+    if (timer) clearInterval(timer);
+
+    function tick(){
+      const now = new Date();
+      const diff = targetDate - now;
+
+      if (diff <= 0){
+        els.days.textContent = '00';
+        els.hours.textContent = '00';
+        els.minutes.textContent = '00';
+        els.seconds.textContent = '00';
+        els.progress.style.width = '100%';
+        els.grid.style.opacity = '0.35';
+        els.done.style.display = 'block';
+        clearInterval(timer);
+        return;
+      }
+
+      const totalSeconds = Math.floor(diff / 1000);
+      const d = Math.floor(totalSeconds / 86400);
+      const h = Math.floor((totalSeconds % 86400) / 3600);
+      const m = Math.floor((totalSeconds % 3600) / 60);
+      const s = totalSeconds % 60;
+
+      els.days.textContent = pad2(d);
+      els.hours.textContent = pad2(h);
+      els.minutes.textContent = pad2(m);
+      els.seconds.textContent = pad2(s);
+
+      const total = targetDate - startDate;
+      const elapsed = now - startDate;
+      const pct = Math.min(100, Math.max(0, (elapsed / total) * 100));
+      els.progress.style.width = pct + '%';
+    }
+
+    tick();
+    timer = setInterval(tick, 1000);
+  }
+
+  // ---- Events bar: switch, add, delete ----
+  const eventsBarEl = document.getElementById('eventsBar');
+
+  const addEventBtn = document.createElement('button');
+  addEventBtn.type = 'button';
+  addEventBtn.className = 'add-event-btn';
+  addEventBtn.innerHTML =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg> New';
+  addEventBtn.addEventListener('click', () => openAddEventModal());
+
+  function formatChipDate(iso){
+    return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  }
+
+  function renderChips(){
+    eventsBarEl.innerHTML = '';
+    events.forEach((ev) => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'event-chip' + (ev.id === activeId ? ' active' : '');
+
+      const label = document.createElement('span');
+      label.textContent = ev.title;
+      chip.appendChild(label);
+
+      const dateSpan = document.createElement('span');
+      dateSpan.className = 'event-chip-date';
+      dateSpan.textContent = formatChipDate(ev.date);
+      chip.appendChild(dateSpan);
+
+      if (events.length > 1){
+        const del = document.createElement('span');
+        del.className = 'event-chip-delete';
+        del.textContent = '×';
+        del.setAttribute('role', 'button');
+        del.setAttribute('aria-label', `Delete "${ev.title}"`);
+        del.addEventListener('click', (e) => {
+          e.stopPropagation();
+          deleteEvent(ev.id);
+        });
+        chip.appendChild(del);
+      }
+
+      chip.addEventListener('click', () => {
+        if (ev.id === activeId) return;
+        setActiveId(ev.id);
+        renderChips();
+        applyActiveEvent();
+      });
+
+      eventsBarEl.appendChild(chip);
+    });
+    eventsBarEl.appendChild(addEventBtn);
+  }
+
+  function deleteEvent(id){
+    const ev = events.find((e) => e.id === id);
+    if (!ev || events.length <= 1) return;
+    if (!confirm(`Delete "${ev.title}"?`)) return;
+
+    events = events.filter((e) => e.id !== id);
+    saveEvents();
+    if (activeId === id) setActiveId(events[0].id);
+
+    renderChips();
+    applyActiveEvent();
+  }
+
+  // ---- Add Event modal ----
+  const addEventBackdrop = document.getElementById('addEventBackdrop');
+  const addEventForm = document.getElementById('addEventForm');
+  const formError = document.getElementById('formError');
+
+  function openAddEventModal(){
+    formError.textContent = '';
+    addEventForm.reset();
+    addEventBackdrop.classList.add('open');
+    document.getElementById('newEventTitle').focus();
+  }
+
+  function closeAddEventModal(){
+    addEventBackdrop.classList.remove('open');
+  }
+
+  document.getElementById('cancelAddEvent').addEventListener('click', closeAddEventModal);
+
+  addEventBackdrop.addEventListener('click', (e) => {
+    if (e.target === addEventBackdrop) closeAddEventModal();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && addEventBackdrop.classList.contains('open')) closeAddEventModal();
+  });
+
+  addEventForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const title = document.getElementById('newEventTitle').value.trim();
+    const dateStr = document.getElementById('newEventDate').value;
+    const timeStr = document.getElementById('newEventTime').value;
+    const location = document.getElementById('newEventLocation').value.trim();
+    const notes = document.getElementById('newEventNotes').value.trim();
+
+    if (!title){
+      formError.textContent = 'Please enter a title.';
+      return;
+    }
+    if (!dateStr || !timeStr){
+      formError.textContent = 'Please choose both a date and a time.';
+      return;
+    }
+
+    const [y, mo, d] = dateStr.split('-').map(Number);
+    const [h, mi] = timeStr.split(':').map(Number);
+    const targetDate = new Date(y, mo - 1, d, h, mi, 0);
+
+    if (isNaN(targetDate.getTime())){
+      formError.textContent = 'That date/time doesn’t look valid.';
+      return;
+    }
+
+    const newEvent = {
+      id: `ev-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      title,
+      date: targetDate.toISOString(),
+      createdAt: new Date().toISOString(),
+      location,
+      description: notes || 'Countdown event, created from the countdown page.',
+    };
+
+    events.push(newEvent);
+    saveEvents();
+    setActiveId(newEvent.id);
+
+    renderChips();
+    applyActiveEvent();
+    closeAddEventModal();
+  });
+
+  renderChips();
+  applyActiveEvent();
+
+  // ---- Add to Calendar ----
   function downloadICS(){
     const dtstamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-    const uid = `countdown-${eventStart.getTime()}@countdown-app`;
+    const uid = `countdown-${currentTargetDate.getTime()}-${currentEvent.id}@countdown-app`;
 
     const lines = [
       'BEGIN:VCALENDAR',
@@ -668,12 +1090,12 @@
       'BEGIN:VEVENT',
       `UID:${uid}`,
       `DTSTAMP:${dtstamp}`,
-      `DTSTART:${toCalDateString(eventStart)}`,
-      `DTEND:${toCalDateString(eventEnd)}`,
-      `SUMMARY:${EVENT_TITLE}`,
-      `DESCRIPTION:${EVENT_DESCRIPTION}`,
+      `DTSTART:${toCalDateString(currentTargetDate)}`,
+      `DTEND:${toCalDateString(currentEndDate)}`,
+      `SUMMARY:${currentEvent.title}`,
+      `DESCRIPTION:${currentEvent.description || ''}`,
     ];
-    if (EVENT_LOCATION) lines.push(`LOCATION:${EVENT_LOCATION}`);
+    if (currentEvent.location) lines.push(`LOCATION:${currentEvent.location}`);
     lines.push('END:VEVENT', 'END:VCALENDAR');
 
     const blob = new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
@@ -819,8 +1241,8 @@
     const file = new File([blob], 'countdown.png', { type: 'image/png' });
     const shareData = {
       files: [file],
-      title: EVENT_TITLE,
-      text: `Countdown to ${EVENT_TITLE} — ${els.targetLabel.textContent}`,
+      title: currentEvent.title,
+      text: `Countdown to ${currentEvent.title} — ${els.targetLabel.textContent}`,
     };
 
     if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })){
