@@ -17,6 +17,8 @@
 
   *{ margin:0; padding:0; box-sizing:border-box; }
 
+  html{ color-scheme:dark; }
+
   html,body{
     min-height:100%;
     overflow-x:hidden;
@@ -26,9 +28,9 @@
   body{
     font-family:'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     background:
-      radial-gradient(ellipse at 20% 20%, rgba(168,85,247,0.35), transparent 55%),
-      radial-gradient(ellipse at 80% 30%, rgba(236,72,153,0.30), transparent 55%),
-      radial-gradient(ellipse at 50% 85%, rgba(56,189,248,0.25), transparent 55%),
+      radial-gradient(ellipse at 20% 20%, color-mix(in srgb, var(--accent-1) 35%, transparent), transparent 55%),
+      radial-gradient(ellipse at 80% 30%, color-mix(in srgb, var(--accent-2) 30%, transparent), transparent 55%),
+      radial-gradient(ellipse at 50% 85%, color-mix(in srgb, var(--accent-3) 25%, transparent), transparent 55%),
       linear-gradient(160deg, var(--bg-1), var(--bg-2));
     color:var(--text);
     display:flex;
@@ -158,21 +160,32 @@
     grid-template-columns:repeat(4, 1fr);
     gap:clamp(10px, 2.4vw, 22px);
     width:100%;
+    transition:grid-template-columns .35s ease;
   }
 
   .card{
     position:relative;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
     background:rgba(255,255,255,0.055);
     border:1px solid rgba(255,255,255,0.14);
     border-radius:clamp(16px, 2.5vw, 26px);
     backdrop-filter:blur(18px);
     -webkit-backdrop-filter:blur(18px);
-    padding:clamp(14px, 3.4vw, 30px) clamp(4px, 2vw, 10px);
+    padding:clamp(10px, 2.4vw, 20px) clamp(4px, 1.6vw, 8px);
     box-shadow:
       0 8px 32px rgba(0,0,0,0.35),
       inset 0 1px 0 rgba(255,255,255,0.15);
     overflow:hidden;
-    transition:transform .4s ease;
+    transition:transform .4s ease, background .3s ease, border-color .3s ease, padding .35s ease;
+  }
+
+  .card.emphasized{
+    background:rgba(255,255,255,0.095);
+    border-color:rgba(255,255,255,0.3);
+    padding:clamp(16px, 3.8vw, 34px) clamp(6px, 2.2vw, 12px);
   }
 
   .card::before{
@@ -186,7 +199,7 @@
   .card:hover{ transform:translateY(-4px); }
 
   .num{
-    font-size:clamp(30px, 8.5vw, 72px);
+    font-size:clamp(22px, 5.5vw, 44px);
     font-weight:800;
     font-variant-numeric:tabular-nums;
     line-height:1;
@@ -197,6 +210,13 @@
     text-shadow:0 0 30px rgba(168,85,247,0.35);
     display:inline-block;
     min-width:1.6ch;
+    transition:font-size .3s ease, opacity .3s ease;
+    opacity:0.75;
+  }
+
+  .num.big{
+    font-size:clamp(48px, 13.5vw, 112px);
+    opacity:1;
   }
 
   .label{
@@ -402,10 +422,246 @@
     gap:14px;
   }
 
+  .events-bar{
+    width:100%;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    overflow-x:auto;
+    padding:2px 2px 6px;
+  }
+  .events-bar::-webkit-scrollbar{ height:6px; }
+  .events-bar::-webkit-scrollbar-thumb{ background:rgba(255,255,255,0.2); border-radius:999px; }
+
+  .event-chip{
+    flex-shrink:0;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:9px 8px 9px 16px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,0.14);
+    background:rgba(255,255,255,0.05);
+    color:var(--muted);
+    font-family:inherit;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    white-space:nowrap;
+    transition:background .2s ease, border-color .2s ease, color .2s ease;
+  }
+  .event-chip:hover{ background:rgba(255,255,255,0.1); }
+  .event-chip.active{
+    background:linear-gradient(90deg, rgba(168,85,247,0.4), rgba(56,189,248,0.32));
+    border-color:rgba(255,255,255,0.4);
+    color:var(--text);
+  }
+
+  .event-chip-date{
+    opacity:0.75;
+    font-weight:500;
+    font-size:12px;
+  }
+
+  .event-chip-edit,
+  .event-chip-delete{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:18px;
+    height:18px;
+    border-radius:50%;
+    font-size:14px;
+    line-height:1;
+    opacity:0.5;
+    transition:opacity .15s ease, background .15s ease;
+  }
+  .event-chip-edit:hover,
+  .event-chip-delete:hover{ opacity:1; background:rgba(255,255,255,0.18); }
+  .event-chip-edit svg{ width:11px; height:11px; }
+
+  .add-event-btn{
+    flex-shrink:0;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    height:36px;
+    padding:0 16px;
+    border-radius:999px;
+    border:1px dashed rgba(255,255,255,0.35);
+    background:transparent;
+    color:var(--text);
+    font-family:inherit;
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+    transition:background .2s ease, border-color .2s ease;
+  }
+  .add-event-btn:hover{ background:rgba(255,255,255,0.09); border-color:rgba(255,255,255,0.55); }
+  .add-event-btn svg{ width:15px; height:15px; flex-shrink:0; }
+
+  .modal-backdrop{
+    position:fixed;
+    inset:0;
+    background:rgba(5,2,14,0.72);
+    backdrop-filter:blur(6px);
+    -webkit-backdrop-filter:blur(6px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .2s ease;
+    z-index:100;
+  }
+  .modal-backdrop.open{ opacity:1; pointer-events:auto; }
+
+  .modal-card{
+    width:100%;
+    max-width:400px;
+    background:rgba(19,10,38,0.98);
+    border:1px solid rgba(255,255,255,0.16);
+    border-radius:20px;
+    padding:26px;
+    box-shadow:0 24px 60px rgba(0,0,0,0.5);
+    transform:translateY(14px) scale(0.98);
+    transition:transform .25s ease;
+    text-align:left;
+  }
+  .modal-backdrop.open .modal-card{ transform:translateY(0) scale(1); }
+
+  .modal-card h2{
+    font-size:20px;
+    font-weight:800;
+    margin-bottom:18px;
+    background:linear-gradient(90deg, #fff, var(--accent-3));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+
+  .field{ margin-bottom:14px; }
+  .field label{
+    display:block;
+    font-size:11.5px;
+    font-weight:700;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:6px;
+  }
+  .field label .optional{
+    text-transform:none;
+    font-weight:500;
+    letter-spacing:0;
+    opacity:0.7;
+  }
+
+  .field input, .field textarea{
+    width:100%;
+    padding:11px 14px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,0.18);
+    background:rgba(255,255,255,0.06);
+    color:var(--text);
+    font-family:inherit;
+    font-size:14px;
+    resize:none;
+  }
+  .field input::placeholder, .field textarea::placeholder{ color:rgba(185,169,214,0.5); }
+  .field input:focus, .field textarea:focus{
+    outline:none;
+    border-color:var(--accent-3);
+    box-shadow:0 0 0 3px rgba(56,189,248,0.25);
+  }
+
+  .field-row{ display:flex; gap:10px; }
+  .field-row .field{ flex:1; margin-bottom:14px; }
+
+  .color-field{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+
+  label.checkbox-label{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:13px;
+    font-weight:600;
+    color:var(--muted);
+    text-transform:none;
+    letter-spacing:normal;
+    margin-bottom:0;
+    cursor:pointer;
+  }
+  .checkbox-label input[type="checkbox"]{
+    width:16px;
+    height:16px;
+    accent-color:var(--accent-3);
+    cursor:pointer;
+  }
+
+  .color-field input[type="color"]{
+    width:40px;
+    height:36px;
+    padding:2px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,0.18);
+    background:rgba(255,255,255,0.06);
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  .color-field input[type="color"]:disabled{
+    opacity:0.4;
+    cursor:not-allowed;
+  }
+
+  .form-error{
+    color:#fda4af;
+    font-size:13px;
+    font-weight:600;
+    min-height:18px;
+    margin-bottom:2px;
+  }
+
+  .modal-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:8px;
+  }
+  .modal-btn{
+    padding:10px 20px;
+    border-radius:999px;
+    font-family:inherit;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    border:none;
+  }
+  .modal-btn.ghost{
+    background:transparent;
+    color:var(--muted);
+    border:1px solid rgba(255,255,255,0.18);
+  }
+  .modal-btn.ghost:hover{ background:rgba(255,255,255,0.08); }
+  .modal-btn.primary{
+    background:linear-gradient(90deg, var(--accent-3), var(--accent-1));
+    color:#0a0118;
+  }
+  .modal-btn.primary:hover{ filter:brightness(1.08); }
+
   .exporting .cal-wrap,
   .exporting .export-wrap,
   .exporting footer,
-  .exporting .toast{
+  .exporting .toast,
+  .exporting .events-bar,
+  .exporting .modal-backdrop{
     visibility:hidden !important;
   }
   .exporting .card{
@@ -449,7 +705,9 @@
   <div class="orb orb3"></div>
 
   <div class="stage">
-    <svg class="hug" viewBox="0 0 240 220" xmlns="http://www.w3.org/2000/svg" aria-label="Illustration of a couple hugging">
+    <div class="events-bar" id="eventsBar"></div>
+
+    <svg class="hug" id="hugSvg" viewBox="0 0 240 220" xmlns="http://www.w3.org/2000/svg" aria-label="Illustration for this countdown">
       <defs>
         <linearGradient id="gradA" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stop-color="#a855f7"/>
@@ -567,20 +825,96 @@
 
   <div class="toast" id="toast"></div>
 
+  <div class="modal-backdrop" id="addEventBackdrop">
+    <div class="modal-card">
+      <h2 id="modalTitle">New Countdown</h2>
+      <form id="addEventForm">
+        <div class="field">
+          <label for="newEventTitle">Title</label>
+          <input id="newEventTitle" type="text" placeholder="e.g. Sarah's Birthday" maxlength="80" autocomplete="off">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="newEventDate">Date</label>
+            <input id="newEventDate" type="date">
+          </div>
+          <div class="field">
+            <label for="newEventTime">Time</label>
+            <input id="newEventTime" type="time">
+          </div>
+        </div>
+        <div class="field">
+          <label for="newEventLocation">Location <span class="optional">(optional)</span></label>
+          <input id="newEventLocation" type="text" placeholder="e.g. Grandma's house" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="newEventNotes">Notes <span class="optional">(optional)</span></label>
+          <textarea id="newEventNotes" rows="2" placeholder="Anything worth remembering"></textarea>
+        </div>
+        <div class="field color-field">
+          <label class="checkbox-label">
+            <input type="checkbox" id="useCustomColor">
+            Use a custom color <span class="optional">(otherwise auto-picked from the title)</span>
+          </label>
+          <input id="newEventColor" type="color" value="#a855f7" disabled>
+        </div>
+        <div class="form-error" id="formError"></div>
+        <div class="modal-actions">
+          <button type="button" class="modal-btn ghost" id="cancelAddEvent">Cancel</button>
+          <button type="submit" class="modal-btn primary" id="submitEventBtn">Add Event</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <footer>Countdown &middot; local time</footer>
 
 <script>
-  // ---- Configure your countdown here ----
-  const TARGET_DATE = new Date(2026, 6, 29, 16, 0, 0); // July 29, 2026, 16:00 local time
-  const START_DATE  = new Date(2026, 6, 16, 0, 0, 0);  // for progress bar baseline
-
-  const EVENT_TITLE       = document.getElementById('title').textContent;
-  const EVENT_DESCRIPTION = 'Countdown event, created from the countdown page.';
-  const EVENT_LOCATION    = '';
+  // ---- Multiple events, persisted in this browser ----
+  const STORAGE_EVENTS = 'countdown_events_v1';
+  const STORAGE_ACTIVE = 'countdown_active_id_v1';
   const EVENT_DURATION_HOURS = 1;
-  // ----------------------------------------
+
+  function defaultEvents(){
+    return [{
+      id: 'seed-1',
+      title: 'Something big is coming',
+      date: new Date(2026, 6, 29, 16, 0, 0).toISOString(),
+      createdAt: new Date(2026, 6, 16, 0, 0, 0).toISOString(),
+      location: '',
+      description: 'Countdown event, created from the countdown page.',
+      customColor: null,
+    }];
+  }
+
+  function loadEvents(){
+    try {
+      const raw = localStorage.getItem(STORAGE_EVENTS);
+      const parsed = raw ? JSON.parse(raw) : null;
+      if (Array.isArray(parsed) && parsed.length) return parsed;
+    } catch (err){ /* fall through to defaults */ }
+    return defaultEvents();
+  }
+
+  function saveEvents(){
+    localStorage.setItem(STORAGE_EVENTS, JSON.stringify(events));
+  }
+
+  let events = loadEvents();
+  let activeId = localStorage.getItem(STORAGE_ACTIVE) || events[0].id;
+  if (!events.some((e) => e.id === activeId)) activeId = events[0].id;
+
+  function setActiveId(id){
+    activeId = id;
+    localStorage.setItem(STORAGE_ACTIVE, activeId);
+  }
+
+  function getActiveEvent(){
+    return events.find((e) => e.id === activeId) || events[0];
+  }
 
   const els = {
+    title: document.getElementById('title'),
     days: document.getElementById('days'),
     hours: document.getElementById('hours'),
     minutes: document.getElementById('minutes'),
@@ -591,54 +925,25 @@
     targetLabel: document.getElementById('targetLabel'),
   };
 
-  els.targetLabel.textContent = TARGET_DATE.toLocaleString(undefined, {
-    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-    hour: '2-digit', minute: '2-digit'
-  });
-
-  const pad = n => String(n).padStart(2, '0');
-
-  function tick(){
-    const now = new Date();
-    const diff = TARGET_DATE - now;
-
-    if (diff <= 0){
-      els.days.textContent = '00';
-      els.hours.textContent = '00';
-      els.minutes.textContent = '00';
-      els.seconds.textContent = '00';
-      els.progress.style.width = '100%';
-      els.grid.style.opacity = '0.35';
-      els.done.style.display = 'block';
-      clearInterval(timer);
-      return;
-    }
-
-    const totalSeconds = Math.floor(diff / 1000);
-    const d = Math.floor(totalSeconds / 86400);
-    const h = Math.floor((totalSeconds % 86400) / 3600);
-    const m = Math.floor((totalSeconds % 3600) / 60);
-    const s = totalSeconds % 60;
-
-    els.days.textContent = pad(d);
-    els.hours.textContent = pad(h);
-    els.minutes.textContent = pad(m);
-    els.seconds.textContent = pad(s);
-
-    const total = TARGET_DATE - START_DATE;
-    const elapsed = now - START_DATE;
-    const pct = Math.min(100, Math.max(0, (elapsed / total) * 100));
-    els.progress.style.width = pct + '%';
-  }
-
-  tick();
-  const timer = setInterval(tick, 1000);
-
-  // ---- Add to Calendar ----
-  const eventStart = TARGET_DATE;
-  const eventEnd = new Date(TARGET_DATE.getTime() + EVENT_DURATION_HOURS * 3600 * 1000);
-
   function pad2(n){ return String(n).padStart(2, '0'); }
+
+  // Highlights whichever unit (days/hours/minutes/seconds) is the largest
+  // one still counting down, e.g. once days hits 0 hours becomes the hero.
+  const emphasisTargets = [els.days, els.hours, els.minutes, els.seconds];
+  let lastEmphasizedIndex = -1;
+
+  function setEmphasis(index){
+    if (index === lastEmphasizedIndex) return;
+    lastEmphasizedIndex = index;
+    emphasisTargets.forEach((el, i) => {
+      const isEmphasized = i === index;
+      el.classList.toggle('big', isEmphasized);
+      el.parentElement.classList.toggle('emphasized', isEmphasized);
+    });
+    els.grid.style.gridTemplateColumns = emphasisTargets
+      .map((_, i) => (i === index ? '1.9fr' : '1fr'))
+      .join(' ');
+  }
 
   function toCalDateString(d){
     return `${d.getFullYear()}${pad2(d.getMonth() + 1)}${pad2(d.getDate())}T${pad2(d.getHours())}${pad2(d.getMinutes())}${pad2(d.getSeconds())}`;
@@ -646,19 +951,593 @@
 
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-  const googleCalUrl =
-    'https://calendar.google.com/calendar/render?action=TEMPLATE' +
-    `&text=${encodeURIComponent(EVENT_TITLE)}` +
-    `&dates=${toCalDateString(eventStart)}/${toCalDateString(eventEnd)}` +
-    `&details=${encodeURIComponent(EVENT_DESCRIPTION)}` +
-    `&location=${encodeURIComponent(EVENT_LOCATION)}` +
-    `&ctz=${encodeURIComponent(timeZone)}`;
+  // ---- Per-event visual theme, guessed from the title ----
+  // "love" is also the fallback for anything that matches no keyword below,
+  // so existing/seed events keep the original couple-hugging look.
+  // Illustration gradients reference the CSS accent variables directly, so
+  // the same recolor mechanism drives both auto-detected themes and a
+  // manually picked custom color (see deriveTriadFromColor below).
+  const THEMES = {
+    love: {
+      keywords: ['love', 'anniversary', 'wedding', 'valentine', 'honeymoon', 'engagement', 'propose', 'proposal', 'date night', 'romance', 'marry', 'married'],
+      colors: { a1: '#a855f7', a2: '#ec4899', a3: '#38bdf8' },
+      bg: { bg1: '#0a0118', bg2: '#1a0538' },
+      svg: `
+        <defs>
+          <linearGradient id="gradA" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="var(--accent-1)"/>
+            <stop offset="100%" stop-color="var(--accent-3)"/>
+          </linearGradient>
+          <linearGradient id="gradB" x1="1" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="var(--accent-2)"/>
+            <stop offset="100%" stop-color="var(--accent-1)"/>
+          </linearGradient>
+          <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="var(--accent-2)" stop-opacity="0.55"/>
+            <stop offset="100%" stop-color="var(--accent-2)" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <ellipse cx="120" cy="152" rx="98" ry="55" fill="url(#glow)"/>
+        <path d="M60,206 C54,150 59,118 78,107 C69,94 71,77 90,71 C96,67 109,70 113,85 C119,101 111,121 119,141 C127,159 121,182 119,206 Z" fill="url(#gradA)"/>
+        <path d="M108,121 C121,112 139,113 149,123 C155,129 153,139 145,141 C132,144 116,137 108,129 Z" fill="url(#gradA)"/>
+        <circle cx="95" cy="65" r="21" fill="url(#gradA)"/>
+        <path d="M180,206 C186,150 181,118 162,107 C171,94 169,77 150,71 C144,67 131,70 127,85 C121,101 129,121 121,141 C113,159 119,182 121,206 Z" fill="url(#gradB)"/>
+        <path d="M132,121 C119,112 101,113 91,123 C85,129 87,139 95,141 C108,144 124,137 132,129 Z" fill="url(#gradB)"/>
+        <circle cx="145" cy="65" r="21" fill="url(#gradB)"/>
+        <path class="heart" d="M120,38 C114,28 97,30 97,45 C97,58 120,73 120,73 C120,73 143,58 143,45 C143,30 126,28 120,38 Z" fill="var(--accent-2)"/>
+      `,
+    },
+    birthday: {
+      keywords: ['birthday', 'bday', 'born'],
+      colors: { a1: '#f97316', a2: '#facc15', a3: '#ec4899' },
+      bg: { bg1: '#1a0a02', bg2: '#2a1204' },
+      svg: `
+        <defs>
+          <linearGradient id="gradA" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="var(--accent-1)"/>
+            <stop offset="100%" stop-color="var(--accent-2)"/>
+          </linearGradient>
+          <linearGradient id="gradB" x1="1" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="var(--accent-3)"/>
+            <stop offset="100%" stop-color="var(--accent-1)"/>
+          </linearGradient>
+          <linearGradient id="gradC" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0%" stop-color="var(--accent-2)"/>
+            <stop offset="100%" stop-color="var(--accent-3)"/>
+          </linearGradient>
+          <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="var(--accent-2)" stop-opacity="0.5"/>
+            <stop offset="100%" stop-color="var(--accent-2)" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <ellipse cx="120" cy="140" rx="100" ry="55" fill="url(#glow)"/>
+        <path d="M85,150 C90,175 100,190 118,198" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="2"/>
+        <path d="M150,140 C148,168 138,188 122,198" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="2"/>
+        <path d="M118,170 C119,182 120,190 120,198" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="2"/>
+        <ellipse cx="85" cy="95" rx="30" ry="38" fill="url(#gradA)"/>
+        <path d="M78,131 L92,131 L85,144 Z" fill="url(#gradA)"/>
+        <ellipse cx="150" cy="82" rx="27" ry="35" fill="url(#gradB)"/>
+        <path d="M143,115 L157,115 L150,128 Z" fill="url(#gradB)"/>
+        <ellipse cx="118" cy="118" rx="22" ry="28" fill="url(#gradC)"/>
+        <path d="M112,144 L124,144 L118,155 Z" fill="url(#gradC)"/>
+        <ellipse cx="75" cy="82" rx="7" ry="10" fill="rgba(255,255,255,0.35)"/>
+        <ellipse cx="141" cy="70" rx="6" ry="9" fill="rgba(255,255,255,0.32)"/>
+        <ellipse cx="111" cy="107" rx="5" ry="7" fill="rgba(255,255,255,0.3)"/>
+        <rect x="45" y="55" width="6" height="6" fill="var(--accent-3)" transform="rotate(20 48 58)"/>
+        <rect x="190" y="70" width="6" height="6" fill="var(--accent-1)" transform="rotate(-15 193 73)"/>
+        <circle cx="65" cy="150" r="4" fill="var(--accent-2)"/>
+        <circle cx="180" cy="130" r="4" fill="var(--accent-1)"/>
+        <rect x="30" y="120" width="5" height="5" fill="var(--accent-2)" transform="rotate(35 32 122)"/>
+        <circle cx="200" cy="100" r="3.5" fill="var(--accent-3)"/>
+      `,
+    },
+    travel: {
+      keywords: ['trip', 'travel', 'flight', 'vacation', 'holiday', 'cruise', 'journey', 'getaway'],
+      colors: { a1: '#38bdf8', a2: '#818cf8', a3: '#facc15' },
+      bg: { bg1: '#020a18', bg2: '#0a1638' },
+      svg: `
+        <defs>
+          <linearGradient id="gradA" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="var(--accent-1)"/>
+            <stop offset="100%" stop-color="var(--accent-2)"/>
+          </linearGradient>
+          <linearGradient id="gradB" x1="1" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="var(--accent-2)"/>
+            <stop offset="100%" stop-color="var(--accent-3)"/>
+          </linearGradient>
+          <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="var(--accent-1)" stop-opacity="0.5"/>
+            <stop offset="100%" stop-color="var(--accent-1)" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <ellipse cx="120" cy="130" rx="100" ry="55" fill="url(#glow)"/>
+        <ellipse cx="55" cy="150" rx="26" ry="12" fill="rgba(255,255,255,0.18)"/>
+        <ellipse cx="72" cy="142" rx="18" ry="10" fill="rgba(255,255,255,0.18)"/>
+        <ellipse cx="185" cy="90" rx="22" ry="10" fill="rgba(255,255,255,0.14)"/>
+        <path d="M40,150 C70,140 95,128 118,116" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 10"/>
+        <path d="M55,168 C82,156 100,142 118,128" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 10"/>
+        <path d="M118,60 L188,150 L120,132 L102,168 L96,120 Z" fill="url(#gradA)"/>
+        <path d="M118,60 L120,132 L102,168 Z" fill="url(#gradB)" opacity="0.85"/>
+      `,
+    },
+    work: {
+      keywords: ['launch', 'deadline', 'work', 'meeting', 'interview', 'exam', 'presentation', 'project', 'conference', 'release', 'demo', 'graduation'],
+      colors: { a1: '#34d399', a2: '#38bdf8', a3: '#a855f7' },
+      bg: { bg1: '#021208', bg2: '#04241a' },
+      svg: `
+        <defs>
+          <linearGradient id="gradA" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="var(--accent-2)"/>
+            <stop offset="100%" stop-color="var(--accent-1)"/>
+          </linearGradient>
+          <linearGradient id="gradB" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="var(--accent-3)"/>
+            <stop offset="100%" stop-color="var(--accent-2)"/>
+          </linearGradient>
+          <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="var(--accent-1)" stop-opacity="0.5"/>
+            <stop offset="100%" stop-color="var(--accent-1)" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <ellipse cx="120" cy="150" rx="95" ry="55" fill="url(#glow)"/>
+        <circle cx="55" cy="60" r="2.5" fill="rgba(255,255,255,0.6)"/>
+        <circle cx="185" cy="50" r="2" fill="rgba(255,255,255,0.5)"/>
+        <circle cx="195" cy="110" r="2.5" fill="rgba(255,255,255,0.5)"/>
+        <circle cx="45" cy="110" r="2" fill="rgba(255,255,255,0.45)"/>
+        <path d="M108,175 C104,190 108,205 120,212 C132,205 136,190 132,175 Z" fill="url(#gradB)"/>
+        <path d="M120,45 C142,70 148,110 144,155 L96,155 C92,110 98,70 120,45 Z" fill="url(#gradA)"/>
+        <circle cx="120" cy="100" r="12" fill="rgba(255,255,255,0.85)"/>
+        <circle cx="120" cy="100" r="8" fill="#0a0118"/>
+        <path d="M96,155 L70,175 L96,130 Z" fill="url(#gradB)"/>
+        <path d="M144,155 L170,175 L144,130 Z" fill="url(#gradB)"/>
+      `,
+    },
+    memorial: {
+      keywords: ['cemetery', 'funeral', 'memorial', 'gravesite', 'grave', 'wake', 'vigil', 'remembrance', 'burial', 'headstone', 'condolence', 'mourning', 'in memory'],
+      colors: { a1: '#64748b', a2: '#9ca3af', a3: '#b8a9d9' },
+      bg: { bg1: '#0a0a0f', bg2: '#161620' },
+      svg: `
+        <defs>
+          <linearGradient id="gradA" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="var(--accent-3)"/>
+            <stop offset="100%" stop-color="var(--accent-1)"/>
+          </linearGradient>
+          <linearGradient id="gradB" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="var(--accent-2)"/>
+            <stop offset="100%" stop-color="var(--accent-1)"/>
+          </linearGradient>
+          <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="var(--accent-1)" stop-opacity="0.4"/>
+            <stop offset="100%" stop-color="var(--accent-1)" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="flameGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.55"/>
+            <stop offset="100%" stop-color="#fbbf24" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <ellipse cx="120" cy="150" rx="95" ry="55" fill="url(#glow)"/>
+        <ellipse cx="120" cy="192" rx="30" ry="8" fill="url(#gradB)" opacity="0.8"/>
+        <rect x="104" y="90" width="32" height="100" rx="8" fill="url(#gradA)"/>
+        <ellipse cx="120" cy="90" rx="16" ry="6" fill="url(#gradA)"/>
+        <path d="M104,120 C100,124 100,132 106,134 C110,132 110,124 104,120 Z" fill="url(#gradA)" opacity="0.7"/>
+        <ellipse cx="120" cy="70" rx="26" ry="26" fill="url(#flameGlow)"/>
+        <path d="M120,48 C112,60 108,72 116,82 C118,85 122,85 124,82 C132,72 128,60 120,48 Z" fill="#fbbf24"/>
+        <path d="M120,58 C116,66 114,74 119,79 C120,80.5 120,80.5 121,79 C126,74 124,66 120,58 Z" fill="#fde68a"/>
+        <g opacity="0.9">
+          <circle cx="75" cy="180" r="5" fill="var(--accent-2)"/>
+          <circle cx="70" cy="176" r="4" fill="var(--accent-2)"/>
+          <circle cx="80" cy="176" r="4" fill="var(--accent-2)"/>
+          <circle cx="75" cy="172" r="4" fill="var(--accent-2)"/>
+          <circle cx="75" cy="176" r="3" fill="var(--accent-3)"/>
+          <path d="M75,182 L75,198" stroke="var(--accent-1)" stroke-width="2" fill="none"/>
+        </g>
+        <g opacity="0.9">
+          <circle cx="168" cy="176" r="5" fill="var(--accent-3)"/>
+          <circle cx="163" cy="172" r="4" fill="var(--accent-3)"/>
+          <circle cx="173" cy="172" r="4" fill="var(--accent-3)"/>
+          <circle cx="168" cy="168" r="4" fill="var(--accent-3)"/>
+          <circle cx="168" cy="172" r="3" fill="var(--accent-2)"/>
+          <path d="M168,178 L168,196" stroke="var(--accent-1)" stroke-width="2" fill="none"/>
+        </g>
+      `,
+    },
+    // Fallback for anything that matches no theme's keywords — an hourglass
+    // makes no assumption about what the event actually is.
+    generic: {
+      colors: { a1: '#a855f7', a2: '#ec4899', a3: '#38bdf8' },
+      bg: { bg1: '#0a0118', bg2: '#1a0538' },
+      svg: `
+        <defs>
+          <linearGradient id="gradA" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="var(--accent-1)"/>
+            <stop offset="100%" stop-color="var(--accent-3)"/>
+          </linearGradient>
+          <linearGradient id="gradB" x1="1" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="var(--accent-2)"/>
+            <stop offset="100%" stop-color="var(--accent-1)"/>
+          </linearGradient>
+          <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="var(--accent-2)" stop-opacity="0.5"/>
+            <stop offset="100%" stop-color="var(--accent-2)" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <ellipse cx="120" cy="150" rx="95" ry="55" fill="url(#glow)"/>
+        <rect x="78" y="50" width="84" height="10" rx="4" fill="url(#gradA)"/>
+        <rect x="78" y="160" width="84" height="10" rx="4" fill="url(#gradA)"/>
+        <path d="M86,60 C86,90 114,100 120,110 C126,100 154,90 154,60 Z" fill="none" stroke="url(#gradA)" stroke-width="4"/>
+        <path d="M86,160 C86,130 114,120 120,110 C126,120 154,130 154,160 Z" fill="none" stroke="url(#gradA)" stroke-width="4"/>
+        <path d="M92,66 C92,86 112,96 120,104 C128,96 148,86 148,66 Z" fill="url(#gradB)" opacity="0.85"/>
+        <rect x="118.5" y="104" width="3" height="14" fill="url(#gradB)" opacity="0.85"/>
+        <path d="M100,156 C100,144 120,138 120,138 C120,138 140,144 140,156 Z" fill="url(#gradB)" opacity="0.85"/>
+        <circle cx="60" cy="80" r="2.5" fill="rgba(255,255,255,0.5)"/>
+        <circle cx="182" cy="70" r="2" fill="rgba(255,255,255,0.45)"/>
+        <circle cx="188" cy="130" r="2.5" fill="rgba(255,255,255,0.4)"/>
+      `,
+    },
+  };
 
-  document.getElementById('googleCalLink').href = googleCalUrl;
+  const THEME_PRIORITY = ['memorial', 'birthday', 'travel', 'work', 'love'];
 
+  function pickTheme(title){
+    const lower = (title || '').toLowerCase();
+    for (const key of THEME_PRIORITY){
+      if (THEMES[key].keywords.some((kw) => lower.includes(kw))) return THEMES[key];
+    }
+    return THEMES.generic;
+  }
+
+  // ---- Deriving a full palette from one manually picked color ----
+  function hexToHsl(hex){
+    const r = parseInt(hex.slice(1, 3), 16) / 255;
+    const g = parseInt(hex.slice(3, 5), 16) / 255;
+    const b = parseInt(hex.slice(5, 7), 16) / 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h = 0, s = 0;
+    const l = (max + min) / 2;
+    const d = max - min;
+    if (d !== 0){
+      s = d / (1 - Math.abs(2 * l - 1));
+      switch (max){
+        case r: h = ((g - b) / d) % 6; break;
+        case g: h = (b - r) / d + 2; break;
+        default: h = (r - g) / d + 4; break;
+      }
+      h *= 60;
+      if (h < 0) h += 360;
+    }
+    return { h, s: s * 100, l: l * 100 };
+  }
+
+  function hslToHex(h, s, l){
+    h = ((h % 360) + 360) % 360;
+    s /= 100; l /= 100;
+    const c = (1 - Math.abs(2 * l - 1)) * s;
+    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+    const m = l - c / 2;
+    let r = 0, g = 0, b = 0;
+    if (h < 60){ r = c; g = x; }
+    else if (h < 120){ r = x; g = c; }
+    else if (h < 180){ g = c; b = x; }
+    else if (h < 240){ g = x; b = c; }
+    else if (h < 300){ r = x; b = c; }
+    else { r = c; b = x; }
+    const toHex = (v) => Math.round((v + m) * 255).toString(16).padStart(2, '0');
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  }
+
+  function deriveTriadFromColor(hex){
+    // Mirrors the spread of the original hand-picked palette (purple/pink/blue,
+    // roughly +55°/-70° apart) rather than a harsh 120° primary-color triad.
+    const { h, s, l } = hexToHsl(hex);
+    const sat = Math.min(90, Math.max(55, s));
+    const light = Math.min(72, Math.max(50, l));
+    return {
+      a1: hex,
+      a2: hslToHex(h + 55, sat, Math.min(78, light + 6)),
+      a3: hslToHex(h - 70, sat * 0.9, Math.min(75, light + 3)),
+    };
+  }
+
+  function deriveBgFromColor(hex){
+    const { h } = hexToHsl(hex);
+    return {
+      bg1: hslToHex(h, 55, 6),
+      bg2: hslToHex(h + 15, 50, 12),
+    };
+  }
+
+  function applyTheme(theme, customColor){
+    const colors = customColor ? deriveTriadFromColor(customColor) : theme.colors;
+    const bg = customColor ? deriveBgFromColor(customColor) : theme.bg;
+    const root = document.documentElement.style;
+    root.setProperty('--accent-1', colors.a1);
+    root.setProperty('--accent-2', colors.a2);
+    root.setProperty('--accent-3', colors.a3);
+    root.setProperty('--bg-1', bg.bg1);
+    root.setProperty('--bg-2', bg.bg2);
+    document.getElementById('hugSvg').innerHTML = theme.svg;
+  }
+
+  // Populated by applyActiveEvent() and read by the calendar/share actions below.
+  let currentEvent = null;
+  let currentTargetDate = null;
+  let currentEndDate = null;
+  let timer = null;
+
+  function applyActiveEvent(){
+    const ev = getActiveEvent();
+    const targetDate = new Date(ev.date);
+    const startDate = new Date(ev.createdAt);
+    const endDate = new Date(targetDate.getTime() + EVENT_DURATION_HOURS * 3600 * 1000);
+
+    applyTheme(pickTheme(ev.title), ev.customColor);
+
+    currentEvent = ev;
+    currentTargetDate = targetDate;
+    currentEndDate = endDate;
+
+    els.title.textContent = ev.title;
+    document.title = `${ev.title} — Countdown`;
+    els.targetLabel.textContent = targetDate.toLocaleString(undefined, {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+    els.done.style.display = 'none';
+    els.grid.style.opacity = '1';
+
+    document.getElementById('googleCalLink').href =
+      'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+      `&text=${encodeURIComponent(ev.title)}` +
+      `&dates=${toCalDateString(targetDate)}/${toCalDateString(endDate)}` +
+      `&details=${encodeURIComponent(ev.description || '')}` +
+      `&location=${encodeURIComponent(ev.location || '')}` +
+      `&ctz=${encodeURIComponent(timeZone)}`;
+
+    if (timer) clearInterval(timer);
+
+    function tick(){
+      const now = new Date();
+      const diff = targetDate - now;
+
+      if (diff <= 0){
+        els.days.textContent = '00';
+        els.hours.textContent = '00';
+        els.minutes.textContent = '00';
+        els.seconds.textContent = '00';
+        els.progress.style.width = '100%';
+        els.grid.style.opacity = '0.35';
+        els.done.style.display = 'block';
+        clearInterval(timer);
+        return;
+      }
+
+      const totalSeconds = Math.floor(diff / 1000);
+      const d = Math.floor(totalSeconds / 86400);
+      const h = Math.floor((totalSeconds % 86400) / 3600);
+      const m = Math.floor((totalSeconds % 3600) / 60);
+      const s = totalSeconds % 60;
+
+      els.days.textContent = pad2(d);
+      els.hours.textContent = pad2(h);
+      els.minutes.textContent = pad2(m);
+      els.seconds.textContent = pad2(s);
+
+      setEmphasis(d > 0 ? 0 : h > 0 ? 1 : m > 0 ? 2 : 3);
+
+      const total = targetDate - startDate;
+      const elapsed = now - startDate;
+      const pct = Math.min(100, Math.max(0, (elapsed / total) * 100));
+      els.progress.style.width = pct + '%';
+    }
+
+    tick();
+    timer = setInterval(tick, 1000);
+  }
+
+  // ---- Events bar: switch, add, delete ----
+  const eventsBarEl = document.getElementById('eventsBar');
+
+  const addEventBtn = document.createElement('button');
+  addEventBtn.type = 'button';
+  addEventBtn.className = 'add-event-btn';
+  addEventBtn.innerHTML =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg> New';
+  addEventBtn.addEventListener('click', () => openAddEventModal());
+
+  function formatChipDate(iso){
+    return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  }
+
+  function renderChips(){
+    eventsBarEl.innerHTML = '';
+    events.forEach((ev) => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'event-chip' + (ev.id === activeId ? ' active' : '');
+
+      const label = document.createElement('span');
+      label.textContent = ev.title;
+      chip.appendChild(label);
+
+      const dateSpan = document.createElement('span');
+      dateSpan.className = 'event-chip-date';
+      dateSpan.textContent = formatChipDate(ev.date);
+      chip.appendChild(dateSpan);
+
+      const edit = document.createElement('span');
+      edit.className = 'event-chip-edit';
+      edit.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 3.5l4 4L8 20H4v-4z"/></svg>';
+      edit.setAttribute('role', 'button');
+      edit.setAttribute('aria-label', `Edit "${ev.title}"`);
+      edit.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openAddEventModal(ev.id);
+      });
+      chip.appendChild(edit);
+
+      if (events.length > 1){
+        const del = document.createElement('span');
+        del.className = 'event-chip-delete';
+        del.textContent = '×';
+        del.setAttribute('role', 'button');
+        del.setAttribute('aria-label', `Delete "${ev.title}"`);
+        del.addEventListener('click', (e) => {
+          e.stopPropagation();
+          deleteEvent(ev.id);
+        });
+        chip.appendChild(del);
+      }
+
+      chip.addEventListener('click', () => {
+        if (ev.id === activeId) return;
+        setActiveId(ev.id);
+        renderChips();
+        applyActiveEvent();
+      });
+
+      eventsBarEl.appendChild(chip);
+    });
+    eventsBarEl.appendChild(addEventBtn);
+  }
+
+  function deleteEvent(id){
+    const ev = events.find((e) => e.id === id);
+    if (!ev || events.length <= 1) return;
+    if (!confirm(`Delete "${ev.title}"?`)) return;
+
+    events = events.filter((e) => e.id !== id);
+    saveEvents();
+    if (activeId === id) setActiveId(events[0].id);
+
+    renderChips();
+    applyActiveEvent();
+  }
+
+  // ---- Add Event modal ----
+  const addEventBackdrop = document.getElementById('addEventBackdrop');
+  const addEventForm = document.getElementById('addEventForm');
+  const formError = document.getElementById('formError');
+  const useCustomColorCheckbox = document.getElementById('useCustomColor');
+  const newEventColorInput = document.getElementById('newEventColor');
+
+  useCustomColorCheckbox.addEventListener('change', () => {
+    newEventColorInput.disabled = !useCustomColorCheckbox.checked;
+  });
+
+  const modalTitleEl = document.getElementById('modalTitle');
+  const submitEventBtn = document.getElementById('submitEventBtn');
+  let editingEventId = null;
+
+  function openAddEventModal(eventId){
+    formError.textContent = '';
+    editingEventId = eventId || null;
+
+    if (editingEventId){
+      const ev = events.find((e) => e.id === editingEventId);
+      const d = new Date(ev.date);
+
+      modalTitleEl.textContent = 'Edit Countdown';
+      submitEventBtn.textContent = 'Save Changes';
+      document.getElementById('newEventTitle').value = ev.title;
+      document.getElementById('newEventDate').value = `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+      document.getElementById('newEventTime').value = `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+      document.getElementById('newEventLocation').value = ev.location || '';
+      document.getElementById('newEventNotes').value = ev.description || '';
+      useCustomColorCheckbox.checked = !!ev.customColor;
+      newEventColorInput.disabled = !ev.customColor;
+      newEventColorInput.value = ev.customColor || '#a855f7';
+    } else {
+      addEventForm.reset();
+      modalTitleEl.textContent = 'New Countdown';
+      submitEventBtn.textContent = 'Add Event';
+      newEventColorInput.disabled = true;
+    }
+
+    addEventBackdrop.classList.add('open');
+    document.getElementById('newEventTitle').focus();
+  }
+
+  function closeAddEventModal(){
+    addEventBackdrop.classList.remove('open');
+    editingEventId = null;
+  }
+
+  document.getElementById('cancelAddEvent').addEventListener('click', closeAddEventModal);
+
+  addEventBackdrop.addEventListener('click', (e) => {
+    if (e.target === addEventBackdrop) closeAddEventModal();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && addEventBackdrop.classList.contains('open')) closeAddEventModal();
+  });
+
+  addEventForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const title = document.getElementById('newEventTitle').value.trim();
+    const dateStr = document.getElementById('newEventDate').value;
+    const timeStr = document.getElementById('newEventTime').value;
+    const location = document.getElementById('newEventLocation').value.trim();
+    const notes = document.getElementById('newEventNotes').value.trim();
+    const useCustomColor = document.getElementById('useCustomColor').checked;
+    const customColor = useCustomColor ? document.getElementById('newEventColor').value : null;
+
+    if (!title){
+      formError.textContent = 'Please enter a title.';
+      return;
+    }
+    if (!dateStr || !timeStr){
+      formError.textContent = 'Please choose both a date and a time.';
+      return;
+    }
+
+    const [y, mo, d] = dateStr.split('-').map(Number);
+    const [h, mi] = timeStr.split(':').map(Number);
+    const targetDate = new Date(y, mo - 1, d, h, mi, 0);
+
+    if (isNaN(targetDate.getTime())){
+      formError.textContent = 'That date/time doesn’t look valid.';
+      return;
+    }
+
+    const description = notes || 'Countdown event, created from the countdown page.';
+
+    if (editingEventId){
+      const ev = events.find((e) => e.id === editingEventId);
+      ev.title = title;
+      ev.date = targetDate.toISOString();
+      ev.location = location;
+      ev.description = description;
+      ev.customColor = customColor;
+      saveEvents();
+    } else {
+      const newEvent = {
+        id: `ev-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        title,
+        date: targetDate.toISOString(),
+        createdAt: new Date().toISOString(),
+        location,
+        description,
+        customColor,
+      };
+      events.push(newEvent);
+      saveEvents();
+      setActiveId(newEvent.id);
+    }
+
+    renderChips();
+    applyActiveEvent();
+    closeAddEventModal();
+  });
+
+  renderChips();
+  applyActiveEvent();
+
+  // ---- Add to Calendar ----
   function downloadICS(){
     const dtstamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-    const uid = `countdown-${eventStart.getTime()}@countdown-app`;
+    const uid = `countdown-${currentTargetDate.getTime()}-${currentEvent.id}@countdown-app`;
 
     const lines = [
       'BEGIN:VCALENDAR',
@@ -668,12 +1547,12 @@
       'BEGIN:VEVENT',
       `UID:${uid}`,
       `DTSTAMP:${dtstamp}`,
-      `DTSTART:${toCalDateString(eventStart)}`,
-      `DTEND:${toCalDateString(eventEnd)}`,
-      `SUMMARY:${EVENT_TITLE}`,
-      `DESCRIPTION:${EVENT_DESCRIPTION}`,
+      `DTSTART:${toCalDateString(currentTargetDate)}`,
+      `DTEND:${toCalDateString(currentEndDate)}`,
+      `SUMMARY:${currentEvent.title}`,
+      `DESCRIPTION:${currentEvent.description || ''}`,
     ];
-    if (EVENT_LOCATION) lines.push(`LOCATION:${EVENT_LOCATION}`);
+    if (currentEvent.location) lines.push(`LOCATION:${currentEvent.location}`);
     lines.push('END:VEVENT', 'END:VCALENDAR');
 
     const blob = new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
@@ -819,8 +1698,8 @@
     const file = new File([blob], 'countdown.png', { type: 'image/png' });
     const shareData = {
       files: [file],
-      title: EVENT_TITLE,
-      text: `Countdown to ${EVENT_TITLE} — ${els.targetLabel.textContent}`,
+      title: currentEvent.title,
+      text: `Countdown to ${currentEvent.title} — ${els.targetLabel.textContent}`,
     };
 
     if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })){
