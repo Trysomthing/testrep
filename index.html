@@ -164,6 +164,10 @@
 
   .card{
     position:relative;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
     background:rgba(255,255,255,0.055);
     border:1px solid rgba(255,255,255,0.14);
     border-radius:clamp(16px, 2.5vw, 26px);
@@ -174,7 +178,12 @@
       0 8px 32px rgba(0,0,0,0.35),
       inset 0 1px 0 rgba(255,255,255,0.15);
     overflow:hidden;
-    transition:transform .4s ease;
+    transition:transform .4s ease, background .3s ease, border-color .3s ease;
+  }
+
+  .card.emphasized{
+    background:rgba(255,255,255,0.095);
+    border-color:rgba(255,255,255,0.3);
   }
 
   .card::before{
@@ -199,6 +208,11 @@
     text-shadow:0 0 30px rgba(168,85,247,0.35);
     display:inline-block;
     min-width:1.6ch;
+    transition:font-size .3s ease;
+  }
+
+  .num.big{
+    font-size:clamp(42px, 12vw, 100px);
   }
 
   .label{
@@ -909,6 +923,21 @@
 
   function pad2(n){ return String(n).padStart(2, '0'); }
 
+  // Highlights whichever unit (days/hours/minutes/seconds) is the largest
+  // one still counting down, e.g. once days hits 0 hours becomes the hero.
+  const emphasisTargets = [els.days, els.hours, els.minutes, els.seconds];
+  let lastEmphasizedIndex = -1;
+
+  function setEmphasis(index){
+    if (index === lastEmphasizedIndex) return;
+    lastEmphasizedIndex = index;
+    emphasisTargets.forEach((el, i) => {
+      const isEmphasized = i === index;
+      el.classList.toggle('big', isEmphasized);
+      el.parentElement.classList.toggle('emphasized', isEmphasized);
+    });
+  }
+
   function toCalDateString(d){
     return `${d.getFullYear()}${pad2(d.getMonth() + 1)}${pad2(d.getDate())}T${pad2(d.getHours())}${pad2(d.getMinutes())}${pad2(d.getSeconds())}`;
   }
@@ -1202,6 +1231,8 @@
       els.hours.textContent = pad2(h);
       els.minutes.textContent = pad2(m);
       els.seconds.textContent = pad2(s);
+
+      setEmphasis(d > 0 ? 0 : h > 0 ? 1 : m > 0 ? 2 : 3);
 
       const total = targetDate - startDate;
       const elapsed = now - startDate;
