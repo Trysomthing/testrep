@@ -1270,7 +1270,10 @@
     const startDate = new Date(ev.createdAt);
     const endDate = new Date(targetDate.getTime() + EVENT_DURATION_HOURS * 3600 * 1000);
 
-    applyTheme(pickTheme(ev.title), ev.customColor);
+    // The seed event keeps its original couple-hugging illustration regardless
+    // of keyword matching — it's the flagship example, not user-generated content.
+    const theme = ev.id === 'seed-1' ? THEMES.love : pickTheme(ev.title);
+    applyTheme(theme, ev.customColor);
 
     currentEvent = ev;
     currentTargetDate = targetDate;
