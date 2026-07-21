@@ -1091,9 +1091,58 @@
         <path d="M144,155 L170,175 L144,130 Z" fill="url(#gradB)"/>
       `,
     },
+    memorial: {
+      keywords: ['cemetery', 'funeral', 'memorial', 'gravesite', 'grave', 'wake', 'vigil', 'remembrance', 'burial', 'headstone', 'condolence', 'mourning', 'in memory'],
+      colors: { a1: '#64748b', a2: '#9ca3af', a3: '#b8a9d9' },
+      bg: { bg1: '#0a0a0f', bg2: '#161620' },
+      svg: `
+        <defs>
+          <linearGradient id="gradA" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="var(--accent-3)"/>
+            <stop offset="100%" stop-color="var(--accent-1)"/>
+          </linearGradient>
+          <linearGradient id="gradB" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="var(--accent-2)"/>
+            <stop offset="100%" stop-color="var(--accent-1)"/>
+          </linearGradient>
+          <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="var(--accent-1)" stop-opacity="0.4"/>
+            <stop offset="100%" stop-color="var(--accent-1)" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="flameGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.55"/>
+            <stop offset="100%" stop-color="#fbbf24" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <ellipse cx="120" cy="150" rx="95" ry="55" fill="url(#glow)"/>
+        <ellipse cx="120" cy="192" rx="30" ry="8" fill="url(#gradB)" opacity="0.8"/>
+        <rect x="104" y="90" width="32" height="100" rx="8" fill="url(#gradA)"/>
+        <ellipse cx="120" cy="90" rx="16" ry="6" fill="url(#gradA)"/>
+        <path d="M104,120 C100,124 100,132 106,134 C110,132 110,124 104,120 Z" fill="url(#gradA)" opacity="0.7"/>
+        <ellipse cx="120" cy="70" rx="26" ry="26" fill="url(#flameGlow)"/>
+        <path d="M120,48 C112,60 108,72 116,82 C118,85 122,85 124,82 C132,72 128,60 120,48 Z" fill="#fbbf24"/>
+        <path d="M120,58 C116,66 114,74 119,79 C120,80.5 120,80.5 121,79 C126,74 124,66 120,58 Z" fill="#fde68a"/>
+        <g opacity="0.9">
+          <circle cx="75" cy="180" r="5" fill="var(--accent-2)"/>
+          <circle cx="70" cy="176" r="4" fill="var(--accent-2)"/>
+          <circle cx="80" cy="176" r="4" fill="var(--accent-2)"/>
+          <circle cx="75" cy="172" r="4" fill="var(--accent-2)"/>
+          <circle cx="75" cy="176" r="3" fill="var(--accent-3)"/>
+          <path d="M75,182 L75,198" stroke="var(--accent-1)" stroke-width="2" fill="none"/>
+        </g>
+        <g opacity="0.9">
+          <circle cx="168" cy="176" r="5" fill="var(--accent-3)"/>
+          <circle cx="163" cy="172" r="4" fill="var(--accent-3)"/>
+          <circle cx="173" cy="172" r="4" fill="var(--accent-3)"/>
+          <circle cx="168" cy="168" r="4" fill="var(--accent-3)"/>
+          <circle cx="168" cy="172" r="3" fill="var(--accent-2)"/>
+          <path d="M168,178 L168,196" stroke="var(--accent-1)" stroke-width="2" fill="none"/>
+        </g>
+      `,
+    },
   };
 
-  const THEME_PRIORITY = ['birthday', 'travel', 'work'];
+  const THEME_PRIORITY = ['memorial', 'birthday', 'travel', 'work'];
 
   function pickTheme(title){
     const lower = (title || '').toLowerCase();
