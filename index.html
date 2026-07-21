@@ -445,6 +445,7 @@
     font-size:12px;
   }
 
+  .event-chip-edit,
   .event-chip-delete{
     display:inline-flex;
     align-items:center;
@@ -457,7 +458,9 @@
     opacity:0.5;
     transition:opacity .15s ease, background .15s ease;
   }
+  .event-chip-edit:hover,
   .event-chip-delete:hover{ opacity:1; background:rgba(255,255,255,0.18); }
+  .event-chip-edit svg{ width:11px; height:11px; }
 
   .add-event-btn{
     flex-shrink:0;
@@ -806,7 +809,7 @@
 
   <div class="modal-backdrop" id="addEventBackdrop">
     <div class="modal-card">
-      <h2>New Countdown</h2>
+      <h2 id="modalTitle">New Countdown</h2>
       <form id="addEventForm">
         <div class="field">
           <label for="newEventTitle">Title</label>
@@ -840,7 +843,7 @@
         <div class="form-error" id="formError"></div>
         <div class="modal-actions">
           <button type="button" class="modal-btn ghost" id="cancelAddEvent">Cancel</button>
-          <button type="submit" class="modal-btn primary">Add Event</button>
+          <button type="submit" class="modal-btn primary" id="submitEventBtn">Add Event</button>
         </div>
       </form>
     </div>
@@ -1240,6 +1243,17 @@
       dateSpan.textContent = formatChipDate(ev.date);
       chip.appendChild(dateSpan);
 
+      const edit = document.createElement('span');
+      edit.className = 'event-chip-edit';
+      edit.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 3.5l4 4L8 20H4v-4z"/></svg>';
+      edit.setAttribute('role', 'button');
+      edit.setAttribute('aria-label', `Edit "${ev.title}"`);
+      edit.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openAddEventModal(ev.id);
+      });
+      chip.appendChild(edit);
+
       if (events.length > 1){
         const del = document.createElement('span');
         del.className = 'event-chip-delete';
@@ -1289,16 +1303,42 @@
     newEventColorInput.disabled = !useCustomColorCheckbox.checked;
   });
 
-  function openAddEventModal(){
+  const modalTitleEl = document.getElementById('modalTitle');
+  const submitEventBtn = document.getElementById('submitEventBtn');
+  let editingEventId = null;
+
+  function openAddEventModal(eventId){
     formError.textContent = '';
-    addEventForm.reset();
-    newEventColorInput.disabled = true;
+    editingEventId = eventId || null;
+
+    if (editingEventId){
+      const ev = events.find((e) => e.id === editingEventId);
+      const d = new Date(ev.date);
+
+      modalTitleEl.textContent = 'Edit Countdown';
+      submitEventBtn.textContent = 'Save Changes';
+      document.getElementById('newEventTitle').value = ev.title;
+      document.getElementById('newEventDate').value = `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+      document.getElementById('newEventTime').value = `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+      document.getElementById('newEventLocation').value = ev.location || '';
+      document.getElementById('newEventNotes').value = ev.description || '';
+      useCustomColorCheckbox.checked = !!ev.customColor;
+      newEventColorInput.disabled = !ev.customColor;
+      newEventColorInput.value = ev.customColor || '#a855f7';
+    } else {
+      addEventForm.reset();
+      modalTitleEl.textContent = 'New Countdown';
+      submitEventBtn.textContent = 'Add Event';
+      newEventColorInput.disabled = true;
+    }
+
     addEventBackdrop.classList.add('open');
     document.getElementById('newEventTitle').focus();
   }
 
   function closeAddEventModal(){
     addEventBackdrop.classList.remove('open');
+    editingEventId = null;
   }
 
   document.getElementById('cancelAddEvent').addEventListener('click', closeAddEventModal);
@@ -1340,19 +1380,30 @@
       return;
     }
 
-    const newEvent = {
-      id: `ev-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      title,
-      date: targetDate.toISOString(),
-      createdAt: new Date().toISOString(),
-      location,
-      description: notes || 'Countdown event, created from the countdown page.',
-      customColor,
-    };
+    const description = notes || 'Countdown event, created from the countdown page.';
 
-    events.push(newEvent);
-    saveEvents();
-    setActiveId(newEvent.id);
+    if (editingEventId){
+      const ev = events.find((e) => e.id === editingEventId);
+      ev.title = title;
+      ev.date = targetDate.toISOString();
+      ev.location = location;
+      ev.description = description;
+      ev.customColor = customColor;
+      saveEvents();
+    } else {
+      const newEvent = {
+        id: `ev-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        title,
+        date: targetDate.toISOString(),
+        createdAt: new Date().toISOString(),
+        location,
+        description,
+        customColor,
+      };
+      events.push(newEvent);
+      saveEvents();
+      setActiveId(newEvent.id);
+    }
 
     renderChips();
     applyActiveEvent();
