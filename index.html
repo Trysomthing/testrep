@@ -959,6 +959,7 @@
   // manually picked custom color (see deriveTriadFromColor below).
   const THEMES = {
     love: {
+      keywords: ['love', 'anniversary', 'wedding', 'valentine', 'honeymoon', 'engagement', 'propose', 'proposal', 'date night', 'romance', 'marry', 'married'],
       colors: { a1: '#a855f7', a2: '#ec4899', a3: '#38bdf8' },
       bg: { bg1: '#0a0118', bg2: '#1a0538' },
       svg: `
@@ -1140,16 +1141,49 @@
         </g>
       `,
     },
+    // Fallback for anything that matches no theme's keywords — an hourglass
+    // makes no assumption about what the event actually is.
+    generic: {
+      colors: { a1: '#a855f7', a2: '#ec4899', a3: '#38bdf8' },
+      bg: { bg1: '#0a0118', bg2: '#1a0538' },
+      svg: `
+        <defs>
+          <linearGradient id="gradA" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="var(--accent-1)"/>
+            <stop offset="100%" stop-color="var(--accent-3)"/>
+          </linearGradient>
+          <linearGradient id="gradB" x1="1" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="var(--accent-2)"/>
+            <stop offset="100%" stop-color="var(--accent-1)"/>
+          </linearGradient>
+          <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="var(--accent-2)" stop-opacity="0.5"/>
+            <stop offset="100%" stop-color="var(--accent-2)" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <ellipse cx="120" cy="150" rx="95" ry="55" fill="url(#glow)"/>
+        <rect x="78" y="50" width="84" height="10" rx="4" fill="url(#gradA)"/>
+        <rect x="78" y="160" width="84" height="10" rx="4" fill="url(#gradA)"/>
+        <path d="M86,60 C86,90 114,100 120,110 C126,100 154,90 154,60 Z" fill="none" stroke="url(#gradA)" stroke-width="4"/>
+        <path d="M86,160 C86,130 114,120 120,110 C126,120 154,130 154,160 Z" fill="none" stroke="url(#gradA)" stroke-width="4"/>
+        <path d="M92,66 C92,86 112,96 120,104 C128,96 148,86 148,66 Z" fill="url(#gradB)" opacity="0.85"/>
+        <rect x="118.5" y="104" width="3" height="14" fill="url(#gradB)" opacity="0.85"/>
+        <path d="M100,156 C100,144 120,138 120,138 C120,138 140,144 140,156 Z" fill="url(#gradB)" opacity="0.85"/>
+        <circle cx="60" cy="80" r="2.5" fill="rgba(255,255,255,0.5)"/>
+        <circle cx="182" cy="70" r="2" fill="rgba(255,255,255,0.45)"/>
+        <circle cx="188" cy="130" r="2.5" fill="rgba(255,255,255,0.4)"/>
+      `,
+    },
   };
 
-  const THEME_PRIORITY = ['memorial', 'birthday', 'travel', 'work'];
+  const THEME_PRIORITY = ['memorial', 'birthday', 'travel', 'work', 'love'];
 
   function pickTheme(title){
     const lower = (title || '').toLowerCase();
     for (const key of THEME_PRIORITY){
       if (THEMES[key].keywords.some((kw) => lower.includes(kw))) return THEMES[key];
     }
-    return THEMES.love;
+    return THEMES.generic;
   }
 
   // ---- Deriving a full palette from one manually picked color ----
