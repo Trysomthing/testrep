@@ -35,7 +35,9 @@ Pages from `master`.
 - Persisted in the browser's `localStorage` (no backend): the event list and
   which one is currently active both survive reloads.
 - Seed/default event on first load: "Tohar landing" — October 3, 2026,
-  21:10.
+  21:10 — with a custom color (`#fb7185`, coral) set, producing a
+  coral/warm-gold/lavender palette instead of the theme-default purple/
+  pink/blue.
 
 ## Illustration & theme system
 
