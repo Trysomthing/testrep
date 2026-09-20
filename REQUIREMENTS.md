@@ -34,8 +34,8 @@ Pages from `master`.
   you can never end up with zero events.
 - Persisted in the browser's `localStorage` (no backend): the event list and
   which one is currently active both survive reloads.
-- Seed/default event on first load: "Something big is coming" — July 29,
-  2026, 16:00.
+- Seed/default event on first load: "Tohar landing" — October 3, 2026,
+  21:10.
 
 ## Illustration & theme system
 
@@ -62,13 +62,13 @@ Important: **the illustration shape always comes from keyword matching
 only.** Nothing about custom colors below ever changes which picture is
 drawn — only its colors.
 
-**Special case:** the seed event (id `seed-1`, "Something big is coming")
-always shows the `love` illustration (couple hugging + heart), regardless
-of keyword matching — it's the flagship example the app ships with, not
-user-generated content, so it's hardcoded rather than relying on "big" or
-"coming" to accidentally match a keyword. This only applies to that one
-event id; every other event (including one a user renames to the same
-title) goes through normal keyword matching.
+**Special case:** the seed event (id `seed-1`, "Tohar landing") always
+shows the `love` illustration (couple hugging + heart), regardless of
+keyword matching — it's the flagship example the app ships with, not
+user-generated content, so it's hardcoded rather than relying on its title
+to accidentally match a keyword. This only applies to that one event id;
+every other event (including one a user renames to the same title) goes
+through normal keyword matching.
 
 ### Manual color override
 
