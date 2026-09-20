@@ -34,7 +34,7 @@ Pages from `master`.
   you can never end up with zero events.
 - Persisted in the browser's `localStorage` (no backend): the event list and
   which one is currently active both survive reloads.
-- Seed/default event on first load: "Tohar landing" — October 3, 2026,
+- Seed/default event on first load: "Only 16 KM away" — October 3, 2026,
   21:10 — with a custom color (`#fb7185`, coral) set, producing a
   coral/warm-gold/lavender palette instead of the theme-default purple/
   pink/blue.
@@ -64,7 +64,7 @@ Important: **the illustration shape always comes from keyword matching
 only.** Nothing about custom colors below ever changes which picture is
 drawn — only its colors.
 
-**Special case:** the seed event (id `seed-1`, "Tohar landing") always
+**Special case:** the seed event (id `seed-1`, "Only 16 KM away") always
 shows the `love` illustration (couple hugging + heart), regardless of
 keyword matching — it's the flagship example the app ships with, not
 user-generated content, so it's hardcoded rather than relying on its title
