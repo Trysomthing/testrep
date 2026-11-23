@@ -8,9 +8,45 @@ commit archaeology to know what the app is supposed to do; read this file.
 ## What it is
 
 A single self-contained `index.html` — no external libraries, no CDN, no
-build step, no backend. Dark glassmorphic aesthetic (gradient text, blurred
-orbs, frosted-glass cards). Works on mobile and desktop. Deployed via GitHub
+build step, no backend. Works on mobile and desktop. Deployed via GitHub
 Pages from `master`.
+
+### Visual language: "Arcade Pop"
+
+Bold, chunky, sticker-styled — not glassmorphic. The defining elements:
+
+- A fixed **ink** color (`--ink`, a near-black) used everywhere as a thick
+  (2–3px) outline plus a flat, hard-edged offset drop shadow (no blur) —
+  `var(--shadow-x) var(--shadow-y) 0 var(--ink)` — on cards, buttons,
+  chips, menus, modals and the illustration itself. This reads as a sticker
+  or arcade-badge look, not a soft shadow.
+- Flat, saturated fills instead of gradients or translucent glass: no
+  `backdrop-filter`, no gradient-clipped text. Headings and the "done"
+  message are solid text with a small hard `text-shadow` offset in ink
+  instead of a gradient fill.
+- The four countdown tiles each get a different flat accent color, cycling
+  `--accent-1 → --accent-2 → --accent-3 → --accent-1` across
+  Days/Hours/Minutes/Seconds, with dark ink numerals/labels for contrast
+  (not light text on dark glass).
+- Small decorative "sticker" shapes (`.orb1/2/3`) drift gently in the
+  background — flat colored circles/squares with an ink border, no blur —
+  replacing the old soft glow orbs. They intensify slightly as the event
+  gets closer (`time-mid`/`time-close`), same trigger as before.
+- Interactive elements (buttons, chips) "press" on hover: they translate
+  toward their shadow and the shadow shrinks, rather than lifting up.
+- Illustrations (all themes) use flat accent-color fills with a thick ink
+  stroke instead of soft gradient fills, and the whole illustration gets a
+  hard ink drop-shadow — a cut-out sticker look. The generic hourglass's
+  thin frame lines stay a plain flat-colored stroke (no ink border — it's
+  a line drawing, not a filled shape).
+- **Exception — the `memorial` theme opts out of the playful motion**,
+  though it keeps the same sticker-outline structure and its own muted
+  palette: no bob animation on the illustration, no drifting background
+  sticker shapes (`body[data-theme="memorial"]` dampens both), no confetti
+  burst on completion, and the done-state message reads "The day is here"
+  instead of "🎉 It's here!". `applyTheme()` sets `document.body.dataset
+  .theme` to the active theme's key so this (and any future per-theme
+  exception) can hook off it.
 
 ## Core countdown
 
@@ -21,6 +57,13 @@ Pages from `master`.
   minutes, then seconds. The other boxes shrink and dim slightly.
 - Progress bar spanning from the event's creation time to its target time.
 - "It's here! 🎉" done state once the countdown reaches zero.
+- When the active event has a location set, a small pin-icon line under the
+  target date shows the location text as a link that opens a Google Maps
+  search for it (`https://www.google.com/maps/search/?api=1&query=...`) in
+  a new tab — plain URL, no API key, no external script. Hidden entirely
+  when the event has no location. This is intentionally lightweight (no
+  live Google Places autocomplete) to keep the app dependency-free and
+  key-free, per this file's "What it is" section.
 
 ## Multiple events
 
@@ -28,10 +71,14 @@ Pages from `master`.
 - "+ New" opens a modal to add an event: title (required), date + time
   (required), location (optional), notes (optional), and an optional custom
   color override.
-- Each chip has a pencil icon to **edit** that event in place (same modal,
-  pre-filled, updates by id — never creates a duplicate) and a "×" to
-  **delete** it. The delete icon is hidden when it's the only event left —
-  you can never end up with zero events.
+- Chips show only the event's title and stay visually quiet (thin outline,
+  no date/controls) until selected, so a row of several events scans
+  cleanly instead of looking busy. The **active** chip is the one filled in
+  the accent color, and only it shows its date and its pencil icon to
+  **edit** that event in place (same modal, pre-filled, updates by id —
+  never creates a duplicate) and its "×" to **delete** it. The delete icon
+  is hidden when it's the only event left — you can never end up with zero
+  events.
 - Persisted in the browser's `localStorage` (no backend): the event list and
   which one is currently active both survive reloads.
 - Seed/default event on first load: "Only 16 KM away" — October 3, 2026,
@@ -64,13 +111,10 @@ Important: **the illustration shape always comes from keyword matching
 only.** Nothing about custom colors below ever changes which picture is
 drawn — only its colors.
 
-**Special case:** the seed event (id `seed-1`, "Only 16 KM away") always
-shows the `love` illustration (couple hugging + heart), regardless of
-keyword matching — it's the flagship example the app ships with, not
-user-generated content, so it's hardcoded rather than relying on its title
-to accidentally match a keyword. This only applies to that one event id;
-every other event (including one a user renames to the same title) goes
-through normal keyword matching.
+Every event, including the seed event, is re-matched against its *current*
+title every time it's displayed — so editing an event's title (including
+the seed event) always updates its illustration. There is no hardcoded
+exception for any event id.
 
 ### Manual color override
 
@@ -85,9 +129,67 @@ This overrides the *matched theme's colors* — it does not change which
 illustration is shown; that's still whatever `pickTheme(title)` returned.
 
 All theme/custom colors are applied via CSS custom properties
-(`--accent-1/2/3`, `--bg-1/2`), so the title gradient, number gradients,
-buttons, progress bar, background orbs, and the illustration's own SVG
-gradients all reskin together from the same source.
+(`--accent-1/2/3`, `--bg-1/2`), so the countdown tiles, buttons, progress
+bar, background sticker shapes, and the illustration's own flat SVG fills
+all reskin together from the same source.
+
+## Gamification: milestones & ambient time stages
+
+Two independent layers, both driven by data already on the event (no new
+storage beyond the event object):
+
+### Milestones checklist
+
+- Each event has a `milestones` array: `{ id, title, completed, dueDate }`.
+  `dueDate` is an optional `YYYY-MM-DD` string.
+- A "Milestones" panel (between the progress bar and the Add to
+  Calendar/Export buttons) shows a checklist for the active event's
+  milestones, a `done/total` counter, a checkbox to toggle each one done/
+  not-done, a "×" to delete one, and a title input + optional due-date
+  picker + button to add a new one. Changes save to `localStorage`
+  immediately.
+- The seed event ships with 4 example milestones (2 already completed,
+  each with a due date); a newly-created event starts with none.
+- When a milestone has a due date, it's shown under the title as:
+  - an incomplete milestone past its due date — `"<date> · Nd overdue"`;
+  - due today — `"<date> · due today"`;
+  - due in the future — `"<date> · Nd left"`;
+  - a completed milestone — just `"Due <date>"` (no countdown, since it's
+    done). Days are calculated from calendar dates only, ignoring time of
+    day. A milestone with no due date shows no badge at all.
+
+### Milestone-driven decorations
+
+- Completion percentage (`completed / total` milestones) adds small SVG
+  decoration motifs onto the event's illustration, one at a time as
+  thresholds are crossed: **25%** → a sparkle, **50%** → a flower (bottom
+  left), **75%** → a second flower (bottom right), **100%** → a ring glow
+  around the whole illustration.
+- An event with zero milestones shows no decorations at all (no implicit
+  0% state).
+- Decorations reuse the theme's current accent colors (`var(--accent-2/3)`)
+  so they always match the active illustration/palette, and fade in with a
+  short transition when a new one appears.
+
+### Time-driven ambient stage
+
+- As the countdown progresses from creation time to target time, `<body>`
+  gets one of three classes reflecting how close the event is:
+  `time-early` (elapsed < 50%), `time-mid` (50–85%), `time-close` (≥85%,
+  including after the event has passed). This brightens/intensifies the
+  background orbs and starfield (including a few extra twinkling stars) as
+  the event approaches — a subtle ambient cue independent of milestones.
+- When the countdown reaches zero, a one-time confetti burst (24 falling
+  pieces in the current theme's colors) fires across the screen in addition
+  to the existing "It's here!" state. It fires only once per page load per
+  event, not on every tick.
+
+### Export interaction
+
+The milestones panel, the extra twinkle stars, and any in-flight confetti
+are all hidden during Image/GIF export (same mechanism as the existing
+export hide-list) — the decoration motifs baked into the illustration
+itself are *not* hidden, since they're part of the artwork being exported.
 
 ## Add to Calendar
 
