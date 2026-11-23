@@ -264,10 +264,23 @@ someone a job rather than tracking your own to-dos.
   decorations or any other gamification — they're a separate, independent
   checklist.
 
+## Top row layout
+
+The events dropdown trigger, the Add to Calendar icon, and the Share icon
+all sit together in one row at the top of the page (`.top-row`), not
+spread between the top and a button row near the bottom. The events
+trigger shrinks to share the row with the two icons, but its dropdown
+panel still spans the full row width (positioned against `.top-row`, not
+the trigger itself) so the event list stays comfortably wide. The
+Calendar dropdown menu opens anchored to its own right edge rather than
+centered under the button, so it can't run off the side of the screen
+now that the button sits near the right side of a narrow row.
+
 ## Add to Calendar
 
 Icon-only button (calendar icon, no visible label — `aria-label`/`title`
-carry "Add to Calendar" for accessibility). Opens a dropdown with two
+carry "Add to Calendar" for accessibility), in the top row next to the
+events dropdown and Share. Opens a dropdown with two
 options, both driven by the currently active event
 (title, date/time, location, description; duration defaults to 1 hour):
 - **Google Calendar** — opens a prefilled event-creation link in a new tab
