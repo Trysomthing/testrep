@@ -75,6 +75,65 @@
     66%{ transform:translate(-25px,25px) scale(0.95); }
   }
 
+  /* As an event gets closer, the glow intensifies and extra stars fade in */
+  body.time-mid .orb{ opacity:0.68; }
+  body.time-close .orb{
+    opacity:0.85;
+    filter:blur(50px);
+  }
+  body.time-close .stars{ opacity:0.9; }
+
+  .extra-stars{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    opacity:0;
+    transition:opacity .8s ease;
+  }
+  body.time-close .extra-stars{ opacity:1; }
+  .extra-stars span{
+    position:absolute;
+    width:3px;
+    height:3px;
+    background:#fff;
+    border-radius:50%;
+    box-shadow:0 0 6px 1px rgba(255,255,255,0.8);
+    animation:twinkle 2.2s ease-in-out infinite;
+  }
+  .extra-stars span:nth-child(2){ animation-delay:.4s; }
+  .extra-stars span:nth-child(3){ animation-delay:.8s; }
+  .extra-stars span:nth-child(4){ animation-delay:1.2s; }
+  .extra-stars span:nth-child(5){ animation-delay:1.6s; }
+  @keyframes twinkle{
+    0%,100%{ opacity:0.3; transform:scale(1); }
+    50%{ opacity:1; transform:scale(1.6); }
+  }
+
+  .confetti-container{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    overflow:hidden;
+    z-index:60;
+  }
+  .confetti-piece{
+    position:absolute;
+    top:-10px;
+    width:8px;
+    height:14px;
+    border-radius:2px;
+    opacity:0.9;
+    animation:confetti-fall 2.4s ease-in forwards;
+  }
+  @keyframes confetti-fall{
+    0%{ transform:translateY(0) rotate(0deg); opacity:1; }
+    100%{ transform:translateY(110vh) rotate(360deg); opacity:0; }
+  }
+
+  /* Decoration motifs layered onto the illustration as milestones complete */
+  .decor{ opacity:0; transition:opacity .6s ease; }
+  .decor-in{ opacity:1; }
+
   /* subtle starfield */
   .stars{
     position:absolute;
@@ -262,6 +321,144 @@
     color:transparent;
     display:none;
   }
+
+  .milestones{
+    width:100%;
+    max-width:420px;
+    background:rgba(255,255,255,0.045);
+    border:1px solid rgba(255,255,255,0.12);
+    border-radius:18px;
+    padding:14px 16px;
+    text-align:left;
+  }
+
+  .milestones-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:8px;
+  }
+  .milestones-title{
+    font-size:11.5px;
+    font-weight:700;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+  .milestones-count{
+    font-size:12px;
+    font-weight:700;
+    color:var(--text);
+    background:rgba(255,255,255,0.08);
+    padding:2px 9px;
+    border-radius:999px;
+    font-variant-numeric:tabular-nums;
+  }
+
+  .milestones-list{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    max-height:180px;
+    overflow-y:auto;
+  }
+
+  .milestone-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:6px 4px;
+    border-radius:8px;
+    transition:background .15s ease;
+  }
+  .milestone-item:hover{ background:rgba(255,255,255,0.05); }
+  .milestone-item:hover .milestone-delete{ opacity:0.6; }
+
+  .milestone-check{
+    flex-shrink:0;
+    width:20px;
+    height:20px;
+    border-radius:6px;
+    border:1.5px solid rgba(255,255,255,0.3);
+    background:transparent;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    color:#0a0118;
+    transition:background .2s ease, border-color .2s ease;
+  }
+  .milestone-item.completed .milestone-check{
+    background:linear-gradient(135deg, var(--accent-3), var(--accent-2));
+    border-color:transparent;
+  }
+  .milestone-check svg{ width:13px; height:13px; }
+
+  .milestone-label{
+    flex:1;
+    font-size:13.5px;
+    font-weight:600;
+    color:var(--text);
+  }
+  .milestone-item.completed .milestone-label{
+    color:var(--muted);
+    text-decoration:line-through;
+    text-decoration-color:rgba(185,169,214,0.5);
+  }
+
+  .milestone-delete{
+    flex-shrink:0;
+    opacity:0;
+    width:18px;
+    height:18px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:14px;
+    line-height:1;
+    color:var(--muted);
+    cursor:pointer;
+    transition:opacity .15s ease, background .15s ease, color .15s ease;
+  }
+  .milestone-delete:hover{ opacity:1 !important; background:rgba(255,255,255,0.15); color:var(--text); }
+
+  .milestone-add-row{
+    display:flex;
+    gap:8px;
+    margin-top:8px;
+  }
+  .milestone-add-row input{
+    flex:1;
+    padding:9px 12px;
+    border-radius:9px;
+    border:1px solid rgba(255,255,255,0.14);
+    background:rgba(255,255,255,0.05);
+    color:var(--text);
+    font-family:inherit;
+    font-size:13px;
+  }
+  .milestone-add-row input::placeholder{ color:rgba(185,169,214,0.5); }
+  .milestone-add-row input:focus{
+    outline:none;
+    border-color:var(--accent-3);
+  }
+  .milestone-add-btn{
+    flex-shrink:0;
+    width:34px;
+    height:34px;
+    border-radius:9px;
+    border:none;
+    background:rgba(255,255,255,0.1);
+    color:var(--text);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    transition:background .15s ease;
+  }
+  .milestone-add-btn:hover{ background:rgba(255,255,255,0.18); }
+  .milestone-add-btn svg{ width:15px; height:15px; }
 
   .cal-wrap{
     position:relative;
@@ -661,6 +858,9 @@
   .exporting footer,
   .exporting .toast,
   .exporting .events-bar,
+  .exporting .milestones,
+  .exporting .extra-stars,
+  .exporting .confetti-container,
   .exporting .modal-backdrop{
     visibility:hidden !important;
   }
@@ -700,6 +900,13 @@
 <body>
 
   <div class="stars"></div>
+  <div class="extra-stars" id="extraStars">
+    <span style="top:8%;left:15%;"></span>
+    <span style="top:14%;left:82%;"></span>
+    <span style="top:30%;left:6%;"></span>
+    <span style="top:22%;left:45%;"></span>
+    <span style="top:38%;left:90%;"></span>
+  </div>
   <div class="orb orb1"></div>
   <div class="orb orb2"></div>
   <div class="orb orb3"></div>
@@ -766,6 +973,20 @@
 
     <div class="progress-wrap">
       <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <div class="milestones" id="milestones">
+      <div class="milestones-head">
+        <span class="milestones-title">Milestones</span>
+        <span class="milestones-count" id="milestonesCount">0/0</span>
+      </div>
+      <div class="milestones-list" id="milestonesList"></div>
+      <form class="milestone-add-row" id="addMilestoneForm">
+        <input id="newMilestoneTitle" type="text" placeholder="Add a milestone…" maxlength="60" autocomplete="off">
+        <button type="submit" class="milestone-add-btn" aria-label="Add milestone">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+        </button>
+      </form>
     </div>
 
     <div class="cta-row">
@@ -884,6 +1105,12 @@
       location: '',
       description: 'Countdown event, created from the countdown page.',
       customColor: '#fb7185',
+      milestones: [
+        { id: 'm-seed-1', title: 'Book the venue', completed: true },
+        { id: 'm-seed-2', title: 'Send invitations', completed: true },
+        { id: 'm-seed-3', title: 'Final dress fitting', completed: false },
+        { id: 'm-seed-4', title: 'Rehearsal dinner', completed: false },
+      ],
     }];
   }
 
@@ -1258,6 +1485,94 @@
     document.getElementById('hugSvg').innerHTML = theme.svg;
   }
 
+  // ---- Gamification: the illustration reflects real progress ----
+  // Two independent layers, both computed from data already on the event —
+  // no extra storage needed. (1) Milestone completion adds small decorative
+  // motifs onto the illustration. (2) Time remaining shifts the ambient glow
+  // and, at zero, fires a confetti burst.
+
+  function getMilestones(ev){ return (ev && ev.milestones) || []; }
+
+  function milestoneProgress(ev){
+    const list = getMilestones(ev);
+    if (!list.length) return 0;
+    return list.filter((m) => m.completed).length / list.length;
+  }
+
+  function sparkleMotifSvg(cx, cy){
+    return `<g class="decor">
+      <path d="M${cx},${cy - 9} L${cx + 2.5},${cy - 2.5} L${cx + 9},${cy} L${cx + 2.5},${cy + 2.5} L${cx},${cy + 9} L${cx - 2.5},${cy + 2.5} L${cx - 9},${cy} L${cx - 2.5},${cy - 2.5} Z" fill="var(--accent-3)"/>
+      <circle cx="${cx + 14}" cy="${cy + 10}" r="2" fill="var(--accent-2)"/>
+    </g>`;
+  }
+
+  function flowerMotifSvg(cx, cy){
+    return `<g class="decor">
+      <circle cx="${cx}" cy="${cy - 6}" r="4.5" fill="var(--accent-2)"/>
+      <circle cx="${cx - 6}" cy="${cy}" r="4.5" fill="var(--accent-2)"/>
+      <circle cx="${cx + 6}" cy="${cy}" r="4.5" fill="var(--accent-2)"/>
+      <circle cx="${cx}" cy="${cy + 6}" r="4.5" fill="var(--accent-2)"/>
+      <circle cx="${cx}" cy="${cy}" r="3.5" fill="var(--accent-3)"/>
+    </g>`;
+  }
+
+  function ringMotifSvg(){
+    return `<g class="decor">
+      <circle cx="120" cy="110" r="100" fill="none" stroke="var(--accent-3)" stroke-width="2" opacity="0.5"/>
+      <circle cx="120" cy="110" r="100" fill="none" stroke="var(--accent-2)" stroke-width="1" opacity="0.35"/>
+    </g>`;
+  }
+
+  function renderDecorations(ev){
+    const svg = document.getElementById('hugSvg');
+    const old = svg.querySelector('#milestoneDecor');
+    if (old) old.remove();
+
+    if (!getMilestones(ev).length) return;
+    const pct = milestoneProgress(ev);
+
+    let html = '';
+    if (pct >= 0.25) html += sparkleMotifSvg(38, 46);
+    if (pct >= 0.5) html += flowerMotifSvg(34, 184);
+    if (pct >= 0.75) html += flowerMotifSvg(206, 184);
+    if (pct >= 1) html += ringMotifSvg();
+    if (!html) return;
+
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('id', 'milestoneDecor');
+    g.innerHTML = html;
+    svg.appendChild(g);
+
+    requestAnimationFrame(() => {
+      g.querySelectorAll('.decor').forEach((el) => el.classList.add('decor-in'));
+    });
+  }
+
+  let lastTimeStage = null;
+  function setTimeStage(stage){
+    if (stage === lastTimeStage) return;
+    lastTimeStage = stage;
+    document.body.classList.remove('time-early', 'time-mid', 'time-close');
+    document.body.classList.add(stage);
+  }
+
+  function fireConfetti(){
+    const colors = ['var(--accent-1)', 'var(--accent-2)', 'var(--accent-3)', '#ffffff'];
+    const container = document.createElement('div');
+    container.className = 'confetti-container';
+    for (let i = 0; i < 24; i++){
+      const piece = document.createElement('span');
+      piece.className = 'confetti-piece';
+      piece.style.left = Math.random() * 100 + '%';
+      piece.style.background = colors[i % colors.length];
+      piece.style.animationDelay = (Math.random() * 0.4) + 's';
+      piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+      container.appendChild(piece);
+    }
+    document.body.appendChild(container);
+    setTimeout(() => container.remove(), 3000);
+  }
+
   // Populated by applyActiveEvent() and read by the calendar/share actions below.
   let currentEvent = null;
   let currentTargetDate = null;
@@ -1274,10 +1589,13 @@
     // of keyword matching — it's the flagship example, not user-generated content.
     const theme = ev.id === 'seed-1' ? THEMES.love : pickTheme(ev.title);
     applyTheme(theme, ev.customColor);
+    renderDecorations(ev);
 
     currentEvent = ev;
     currentTargetDate = targetDate;
     currentEndDate = endDate;
+
+    renderMilestones();
 
     els.title.textContent = ev.title;
     document.title = `${ev.title} — Countdown`;
@@ -1298,6 +1616,8 @@
 
     if (timer) clearInterval(timer);
 
+    let confettiFired = false;
+
     function tick(){
       const now = new Date();
       const diff = targetDate - now;
@@ -1310,6 +1630,11 @@
         els.progress.style.width = '100%';
         els.grid.style.opacity = '0.35';
         els.done.style.display = 'block';
+        setTimeStage('time-close');
+        if (!confettiFired){
+          confettiFired = true;
+          fireConfetti();
+        }
         clearInterval(timer);
         return;
       }
@@ -1331,6 +1656,9 @@
       const elapsed = now - startDate;
       const pct = Math.min(100, Math.max(0, (elapsed / total) * 100));
       els.progress.style.width = pct + '%';
+
+      const ratio = total > 0 ? elapsed / total : 1;
+      setTimeStage(ratio >= 0.85 ? 'time-close' : ratio >= 0.5 ? 'time-mid' : 'time-early');
     }
 
     tick();
@@ -1523,6 +1851,7 @@
         location,
         description,
         customColor,
+        milestones: [],
       };
       events.push(newEvent);
       saveEvents();
@@ -1532,6 +1861,82 @@
     renderChips();
     applyActiveEvent();
     closeAddEventModal();
+  });
+
+  // ---- Milestones: a planning checklist that drives the decoration layer ----
+  const milestonesListEl = document.getElementById('milestonesList');
+  const milestonesCountEl = document.getElementById('milestonesCount');
+  const addMilestoneForm = document.getElementById('addMilestoneForm');
+  const newMilestoneInput = document.getElementById('newMilestoneTitle');
+
+  function renderMilestones(){
+    const list = getMilestones(currentEvent);
+    milestonesListEl.innerHTML = '';
+
+    list.forEach((m) => {
+      const item = document.createElement('div');
+      item.className = 'milestone-item' + (m.completed ? ' completed' : '');
+
+      const check = document.createElement('button');
+      check.type = 'button';
+      check.className = 'milestone-check';
+      check.setAttribute('aria-label', m.completed ? `Mark "${m.title}" incomplete` : `Mark "${m.title}" complete`);
+      check.innerHTML = m.completed
+        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>'
+        : '';
+      check.addEventListener('click', () => toggleMilestone(m.id));
+      item.appendChild(check);
+
+      const label = document.createElement('span');
+      label.className = 'milestone-label';
+      label.textContent = m.title;
+      item.appendChild(label);
+
+      const del = document.createElement('span');
+      del.className = 'milestone-delete';
+      del.textContent = '×';
+      del.setAttribute('role', 'button');
+      del.setAttribute('aria-label', `Remove "${m.title}"`);
+      del.addEventListener('click', () => deleteMilestone(m.id));
+      item.appendChild(del);
+
+      milestonesListEl.appendChild(item);
+    });
+
+    const done = list.filter((m) => m.completed).length;
+    milestonesCountEl.textContent = `${done}/${list.length}`;
+  }
+
+  function toggleMilestone(milestoneId){
+    const m = getMilestones(currentEvent).find((x) => x.id === milestoneId);
+    if (!m) return;
+    m.completed = !m.completed;
+    saveEvents();
+    renderMilestones();
+    renderDecorations(currentEvent);
+  }
+
+  function deleteMilestone(milestoneId){
+    currentEvent.milestones = getMilestones(currentEvent).filter((x) => x.id !== milestoneId);
+    saveEvents();
+    renderMilestones();
+    renderDecorations(currentEvent);
+  }
+
+  addMilestoneForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const title = newMilestoneInput.value.trim();
+    if (!title) return;
+    if (!currentEvent.milestones) currentEvent.milestones = [];
+    currentEvent.milestones.push({
+      id: `m-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      title,
+      completed: false,
+    });
+    saveEvents();
+    newMilestoneInput.value = '';
+    renderMilestones();
+    renderDecorations(currentEvent);
   });
 
   renderChips();

@@ -89,6 +89,55 @@ All theme/custom colors are applied via CSS custom properties
 buttons, progress bar, background orbs, and the illustration's own SVG
 gradients all reskin together from the same source.
 
+## Gamification: milestones & ambient time stages
+
+Two independent layers, both driven by data already on the event (no new
+storage beyond the event object):
+
+### Milestones checklist
+
+- Each event has a `milestones` array: `{ id, title, completed }`.
+- A "Milestones" panel (between the progress bar and the Add to
+  Calendar/Export buttons) shows a checklist for the active event's
+  milestones, a `done/total` counter, a checkbox to toggle each one done/
+  not-done, a "×" to delete one, and a text input + button to add a new
+  one. Changes save to `localStorage` immediately.
+- The seed event ships with 4 example milestones (2 already completed);
+  a newly-created event starts with none.
+
+### Milestone-driven decorations
+
+- Completion percentage (`completed / total` milestones) adds small SVG
+  decoration motifs onto the event's illustration, one at a time as
+  thresholds are crossed: **25%** → a sparkle, **50%** → a flower (bottom
+  left), **75%** → a second flower (bottom right), **100%** → a ring glow
+  around the whole illustration.
+- An event with zero milestones shows no decorations at all (no implicit
+  0% state).
+- Decorations reuse the theme's current accent colors (`var(--accent-2/3)`)
+  so they always match the active illustration/palette, and fade in with a
+  short transition when a new one appears.
+
+### Time-driven ambient stage
+
+- As the countdown progresses from creation time to target time, `<body>`
+  gets one of three classes reflecting how close the event is:
+  `time-early` (elapsed < 50%), `time-mid` (50–85%), `time-close` (≥85%,
+  including after the event has passed). This brightens/intensifies the
+  background orbs and starfield (including a few extra twinkling stars) as
+  the event approaches — a subtle ambient cue independent of milestones.
+- When the countdown reaches zero, a one-time confetti burst (24 falling
+  pieces in the current theme's colors) fires across the screen in addition
+  to the existing "It's here!" state. It fires only once per page load per
+  event, not on every tick.
+
+### Export interaction
+
+The milestones panel, the extra twinkle stars, and any in-flight confetti
+are all hidden during Image/GIF export (same mechanism as the existing
+export hide-list) — the decoration motifs baked into the illustration
+itself are *not* hidden, since they're part of the artwork being exported.
+
 ## Add to Calendar
 
 Dropdown with two options, both driven by the currently active event
