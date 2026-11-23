@@ -67,18 +67,31 @@ Bold, chunky, sticker-styled — not glassmorphic. The defining elements:
 
 ## Multiple events
 
-- An events bar (chips) at the top lets you switch between saved countdowns.
-- "+ New" opens a modal to add an event: title (required), date + time
-  (required), location (optional), notes (optional), and an optional custom
-  color override.
-- Chips show only the event's title and stay visually quiet (thin outline,
-  no date/controls) until selected, so a row of several events scans
-  cleanly instead of looking busy. The **active** chip is the one filled in
-  the accent color, and only it shows its date and its pencil icon to
-  **edit** that event in place (same modal, pre-filled, updates by id —
-  never creates a duplicate) and its "×" to **delete** it. The delete icon
-  is hidden when it's the only event left — you can never end up with zero
-  events.
+- A single dropdown trigger at the top shows the active event's title and
+  date. Tapping it opens a panel listing every saved event, instead of the
+  old horizontal row of chips (which got busy and hard to scan once there
+  were more than a couple of events).
+- Events in the panel are grouped by how soon they are, computed from
+  calendar dates (not raw time, so "today" means today regardless of the
+  event's time of day):
+  - **Today** — target date is today.
+  - **This week** — 1–7 days out.
+  - **Later** — more than 7 days out.
+  - **Past** — the target date has already passed. Collapsed by default
+    behind a "Past (N)" toggle (a native `<details>`), shown de-emphasized,
+    most-recently-ended first — so events you can no longer act on don't
+    compete for attention with the ones you can, but are still one tap
+    away. Within every other group, events are sorted soonest-first.
+  - A group header is only shown when it has events in it.
+- "+ New countdown" at the top of the panel opens a modal to add an event:
+  title (required), date + time (required), location (optional), notes
+  (optional), and an optional custom color override.
+- Each row shows the event's title and date, a pencil icon to **edit** it
+  in place (same modal, pre-filled, updates by id — never creates a
+  duplicate), and a "×" to **delete** it. The delete icon is hidden when
+  it's the only event left — you can never end up with zero events.
+  Clicking a row's title switches to that event and closes the panel;
+  clicking elsewhere, or pressing Escape, closes it without switching.
 - Persisted in the browser's `localStorage` (no backend): the event list and
   which one is currently active both survive reloads.
 - Seed/default event on first load: "Only 16 KM away" — October 3, 2026,
@@ -144,10 +157,24 @@ storage beyond the event object):
   `dueDate` is an optional `YYYY-MM-DD` string.
 - A "Milestones" panel (between the progress bar and the Add to
   Calendar/Export buttons) shows a checklist for the active event's
-  milestones, a `done/total` counter, a checkbox to toggle each one done/
-  not-done, a "×" to delete one, and a title input + optional due-date
-  picker + button to add a new one. Changes save to `localStorage`
+  milestones, a `done/total` counter, and a checkbox to toggle each one
+  done/not-done plus a "×" to delete it. Changes save to `localStorage`
   immediately.
+- **The bordered panel itself is only shown when there's something to put
+  in it.** With zero milestones and the add form closed, there's no panel
+  chrome at all (no border, no background, no "Milestones" header) — just
+  a plain, borderless "+ Add milestone" button sitting in that spot. The
+  full panel (border, shadow, header/count) reappears the moment either
+  condition flips: the add form is opened, or the event has at least one
+  milestone. Deleting the last milestone (with the form closed) collapses
+  it back down to just the button.
+- Adding one: tapping "+ Add milestone" reveals the title input, optional
+  due-date picker, a submit button, and a cancel ("×") button; submitting
+  or cancelling collapses the form back to just the toggle (and, per
+  above, the whole panel if that leaves zero milestones). It also
+  auto-collapses (discarding anything half-typed) whenever you switch to
+  a different event, so you never find yourself mid-edit on the wrong
+  event's form.
 - The seed event ships with 4 example milestones (2 already completed,
   each with a due date); a newly-created event starts with none.
 - When a milestone has a due date, it's shown under the title as:
@@ -205,20 +232,47 @@ Dropdown with two options, both driven by the currently active event
 Dropdown with four options, all client-side, no server/library:
 - **Save as Image (PNG)** — renders the page (minus buttons/chrome) to a
   canvas via an SVG `foreignObject` + `<img>` + `<canvas>` technique.
+  **Known engine limitation, worked around:** `border`, `box-shadow`, and
+  `text-shadow` silently fail to rasterize through that `<img>`-decode
+  path once the page is this complex (verified against a hand-written
+  minimal reproduction of the same technique, which renders them fine —
+  and the exact same generated SVG also renders them fine when navigated
+  to directly as a document; only decoding it as an `<img>` for
+  `drawImage` drops them). Flat fills, text, and the illustration's own
+  native SVG `stroke`/`fill` all rasterize correctly regardless. Since
+  export already hides everything except the countdown tiles, the eyebrow
+  badge, and the progress bar, `captureToCanvas()` redraws just those
+  elements' ink borders and hard shadows natively on the canvas
+  afterward (`measureInkFrames`/`drawInkShadows`/`drawInkBorders`),
+  measured from the *live* DOM with `.exporting` also forcing
+  `transition:none; animation:none` on every element first — otherwise a
+  transition still mid-flight (e.g. exporting immediately after switching
+  to an event with different emphasis) would leave the hand-measured
+  geometry mismatched against the settled snapshot. The clone also only
+  captures `document.body`, not `<html>`, so the live theme/custom-color
+  CSS variables (set on `document.documentElement`) are explicitly
+  re-declared in the exported SVG's own stylesheet — without that, the
+  export silently reverted to the stylesheet's default purple/pink/blue
+  regardless of the actual active theme. `text-shadow` on the title and
+  the done-state message is not reconstructed (minor, accepted gap —
+  everything else about the export matches the live page).
 - **Save as GIF (animated)** — captures ~5 live frames (~450ms apart,
   showing the countdown actually ticking) and encodes them with a
   hand-written GIF89a encoder: fixed 256-color palette (3/3/2-bit RGB
   buckets), a real dictionary-based LZW compressor, NETSCAPE loop
   extension. Fully self-contained.
 - **Copy Image to Clipboard** — copies a PNG snapshot via the Clipboard API.
-- **Share… (WhatsApp, Telegram, Email)** — uses `navigator.share()` with
-  the image attached as a file where supported (mobile Chrome/Safari,
-  opens the native share sheet). Falls back to copying the image to the
-  clipboard plus a toast message on browsers without file-sharing support
-  (most desktop browsers).
 
-All four hide the events bar, the calendar/export buttons themselves, the
-footer, and any open modal from the captured output.
+**Share** is its own standalone icon-only button next to Add to
+Calendar/Export (not a dropdown item) — uses `navigator.share()` with the
+image attached as a file where supported (mobile Chrome/Safari, opens the
+native share sheet: WhatsApp, Telegram, Email, etc.). Falls back to
+copying the image to the clipboard plus a toast message on browsers
+without file-sharing support (most desktop browsers).
+
+All exports (PNG, GIF, clipboard copy, share) hide the events dropdown,
+the calendar/export/share buttons themselves, the footer, and any open
+modal from the captured output.
 
 ## Known limitations (accepted tradeoffs, not bugs)
 
