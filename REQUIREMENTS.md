@@ -8,9 +8,45 @@ commit archaeology to know what the app is supposed to do; read this file.
 ## What it is
 
 A single self-contained `index.html` — no external libraries, no CDN, no
-build step, no backend. Dark glassmorphic aesthetic (gradient text, blurred
-orbs, frosted-glass cards). Works on mobile and desktop. Deployed via GitHub
+build step, no backend. Works on mobile and desktop. Deployed via GitHub
 Pages from `master`.
+
+### Visual language: "Arcade Pop"
+
+Bold, chunky, sticker-styled — not glassmorphic. The defining elements:
+
+- A fixed **ink** color (`--ink`, a near-black) used everywhere as a thick
+  (2–3px) outline plus a flat, hard-edged offset drop shadow (no blur) —
+  `var(--shadow-x) var(--shadow-y) 0 var(--ink)` — on cards, buttons,
+  chips, menus, modals and the illustration itself. This reads as a sticker
+  or arcade-badge look, not a soft shadow.
+- Flat, saturated fills instead of gradients or translucent glass: no
+  `backdrop-filter`, no gradient-clipped text. Headings and the "done"
+  message are solid text with a small hard `text-shadow` offset in ink
+  instead of a gradient fill.
+- The four countdown tiles each get a different flat accent color, cycling
+  `--accent-1 → --accent-2 → --accent-3 → --accent-1` across
+  Days/Hours/Minutes/Seconds, with dark ink numerals/labels for contrast
+  (not light text on dark glass).
+- Small decorative "sticker" shapes (`.orb1/2/3`) drift gently in the
+  background — flat colored circles/squares with an ink border, no blur —
+  replacing the old soft glow orbs. They intensify slightly as the event
+  gets closer (`time-mid`/`time-close`), same trigger as before.
+- Interactive elements (buttons, chips) "press" on hover: they translate
+  toward their shadow and the shadow shrinks, rather than lifting up.
+- Illustrations (all themes) use flat accent-color fills with a thick ink
+  stroke instead of soft gradient fills, and the whole illustration gets a
+  hard ink drop-shadow — a cut-out sticker look. The generic hourglass's
+  thin frame lines stay a plain flat-colored stroke (no ink border — it's
+  a line drawing, not a filled shape).
+- **Exception — the `memorial` theme opts out of the playful motion**,
+  though it keeps the same sticker-outline structure and its own muted
+  palette: no bob animation on the illustration, no drifting background
+  sticker shapes (`body[data-theme="memorial"]` dampens both), no confetti
+  burst on completion, and the done-state message reads "The day is here"
+  instead of "🎉 It's here!". `applyTheme()` sets `document.body.dataset
+  .theme` to the active theme's key so this (and any future per-theme
+  exception) can hook off it.
 
 ## Core countdown
 
@@ -89,9 +125,9 @@ This overrides the *matched theme's colors* — it does not change which
 illustration is shown; that's still whatever `pickTheme(title)` returned.
 
 All theme/custom colors are applied via CSS custom properties
-(`--accent-1/2/3`, `--bg-1/2`), so the title gradient, number gradients,
-buttons, progress bar, background orbs, and the illustration's own SVG
-gradients all reskin together from the same source.
+(`--accent-1/2/3`, `--bg-1/2`), so the countdown tiles, buttons, progress
+bar, background sticker shapes, and the illustration's own flat SVG fills
+all reskin together from the same source.
 
 ## Gamification: milestones & ambient time stages
 
