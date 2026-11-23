@@ -160,13 +160,21 @@ storage beyond the event object):
   milestones, a `done/total` counter, and a checkbox to toggle each one
   done/not-done plus a "×" to delete it. Changes save to `localStorage`
   immediately.
-- Adding one: the panel shows only a quiet "+ Add milestone" toggle by
-  default — never empty input fields sitting there unused. Tapping it
-  reveals the title input, optional due-date picker, a submit button, and
-  a cancel ("×") button; submitting or cancelling collapses it back to
-  just the toggle. It also auto-collapses (discarding anything half-typed)
-  whenever you switch to a different event, so you never find yourself
-  mid-edit on the wrong event's form.
+- **The bordered panel itself is only shown when there's something to put
+  in it.** With zero milestones and the add form closed, there's no panel
+  chrome at all (no border, no background, no "Milestones" header) — just
+  a plain, borderless "+ Add milestone" button sitting in that spot. The
+  full panel (border, shadow, header/count) reappears the moment either
+  condition flips: the add form is opened, or the event has at least one
+  milestone. Deleting the last milestone (with the form closed) collapses
+  it back down to just the button.
+- Adding one: tapping "+ Add milestone" reveals the title input, optional
+  due-date picker, a submit button, and a cancel ("×") button; submitting
+  or cancelling collapses the form back to just the toggle (and, per
+  above, the whole panel if that leaves zero milestones). It also
+  auto-collapses (discarding anything half-typed) whenever you switch to
+  a different event, so you never find yourself mid-edit on the wrong
+  event's form.
 - The seed event ships with 4 example milestones (2 already completed,
   each with a due date); a newly-created event starts with none.
 - When a milestone has a due date, it's shown under the title as:

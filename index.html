@@ -338,6 +338,21 @@
     text-align:left;
   }
 
+  /* No milestones yet and not actively adding one — the bordered panel
+     is just dead chrome at that point, so collapse it to nothing but the
+     "+ Add milestone" affordance itself. */
+  .milestones.chromeless{
+    background:none;
+    border:none;
+    box-shadow:none;
+    padding:0;
+  }
+  .milestones.chromeless .milestones-head,
+  .milestones.chromeless .milestones-list{
+    display:none;
+  }
+  .milestones.chromeless .milestone-add-toggle{ margin-top:0; }
+
   .milestones-head{
     display:flex;
     align-items:center;
@@ -2074,6 +2089,7 @@
   });
 
   // ---- Milestones: a planning checklist that drives the decoration layer ----
+  const milestonesEl = document.getElementById('milestones');
   const milestonesListEl = document.getElementById('milestonesList');
   const milestonesCountEl = document.getElementById('milestonesCount');
   const addMilestoneForm = document.getElementById('addMilestoneForm');
@@ -2082,9 +2098,20 @@
   const milestoneAddToggle = document.getElementById('milestoneAddToggle');
   const cancelMilestoneBtn = document.getElementById('cancelMilestoneBtn');
 
+  // With no milestones yet and the add form closed, the bordered panel is
+  // just empty chrome — collapse it down to the "+ Add milestone"
+  // affordance alone. It reappears (with its full border/shadow) the
+  // moment there's a milestone to show, or the add form is open.
+  function updateMilestonesPanelVisibility(){
+    const hasMilestones = getMilestones(currentEvent).length > 0;
+    const formOpen = !addMilestoneForm.hidden;
+    milestonesEl.classList.toggle('chromeless', !hasMilestones && !formOpen);
+  }
+
   function openMilestoneForm(){
     milestoneAddToggle.hidden = true;
     addMilestoneForm.hidden = false;
+    updateMilestonesPanelVisibility();
     newMilestoneInput.focus();
   }
 
@@ -2092,6 +2119,7 @@
     addMilestoneForm.reset();
     addMilestoneForm.hidden = true;
     milestoneAddToggle.hidden = false;
+    updateMilestonesPanelVisibility();
   }
 
   milestoneAddToggle.addEventListener('click', openMilestoneForm);
@@ -2166,6 +2194,7 @@
 
     const done = list.filter((m) => m.completed).length;
     milestonesCountEl.textContent = `${done}/${list.length}`;
+    updateMilestonesPanelVisibility();
   }
 
   function toggleMilestone(milestoneId){
