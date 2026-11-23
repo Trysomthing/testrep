@@ -394,16 +394,38 @@
   }
   .milestone-check svg{ width:13px; height:13px; }
 
-  .milestone-label{
+  .milestone-main{
     flex:1;
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    gap:1px;
+  }
+
+  .milestone-label{
     font-size:13.5px;
     font-weight:600;
     color:var(--text);
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
   }
   .milestone-item.completed .milestone-label{
     color:var(--muted);
     text-decoration:line-through;
     text-decoration-color:rgba(185,169,214,0.5);
+  }
+
+  .milestone-due{
+    font-size:11px;
+    font-weight:600;
+    color:var(--muted);
+  }
+  .milestone-due.due-today{ color:#fde68a; }
+  .milestone-due.overdue{ color:#fda4af; }
+  .milestone-item.completed .milestone-due{
+    color:var(--muted);
+    opacity:0.7;
   }
 
   .milestone-delete{
@@ -429,7 +451,6 @@
     margin-top:8px;
   }
   .milestone-add-row input{
-    flex:1;
     padding:9px 12px;
     border-radius:9px;
     border:1px solid rgba(255,255,255,0.14);
@@ -437,6 +458,12 @@
     color:var(--text);
     font-family:inherit;
     font-size:13px;
+  }
+  .milestone-add-row input[type="text"]{ flex:1; min-width:0; }
+  .milestone-add-row input[type="date"]{
+    flex:0 0 auto;
+    width:132px;
+    color-scheme:dark;
   }
   .milestone-add-row input::placeholder{ color:rgba(185,169,214,0.5); }
   .milestone-add-row input:focus{
@@ -887,6 +914,9 @@
   @media (max-width: 480px){
     .grid{ gap:8px; }
     .card{ border-radius:16px; }
+    .milestone-add-row{ flex-wrap:wrap; }
+    .milestone-add-row input[type="text"]{ flex-basis:100%; }
+    .milestone-add-row input[type="date"]{ flex:1; width:auto; }
   }
 
   @media (prefers-reduced-motion: reduce){
@@ -983,6 +1013,7 @@
       <div class="milestones-list" id="milestonesList"></div>
       <form class="milestone-add-row" id="addMilestoneForm">
         <input id="newMilestoneTitle" type="text" placeholder="Add a milestone…" maxlength="60" autocomplete="off">
+        <input id="newMilestoneDue" type="date" aria-label="Due date (optional)">
         <button type="submit" class="milestone-add-btn" aria-label="Add milestone">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
         </button>
@@ -1106,10 +1137,10 @@
       description: 'Countdown event, created from the countdown page.',
       customColor: '#fb7185',
       milestones: [
-        { id: 'm-seed-1', title: 'Book the venue', completed: true },
-        { id: 'm-seed-2', title: 'Send invitations', completed: true },
-        { id: 'm-seed-3', title: 'Final dress fitting', completed: false },
-        { id: 'm-seed-4', title: 'Rehearsal dinner', completed: false },
+        { id: 'm-seed-1', title: 'Book the venue', completed: true, dueDate: '2026-09-01' },
+        { id: 'm-seed-2', title: 'Send invitations', completed: true, dueDate: '2026-09-15' },
+        { id: 'm-seed-3', title: 'Final dress fitting', completed: false, dueDate: '2026-09-28' },
+        { id: 'm-seed-4', title: 'Rehearsal dinner', completed: false, dueDate: '2026-10-02' },
       ],
     }];
   }
@@ -1585,9 +1616,7 @@
     const startDate = new Date(ev.createdAt);
     const endDate = new Date(targetDate.getTime() + EVENT_DURATION_HOURS * 3600 * 1000);
 
-    // The seed event keeps its original couple-hugging illustration regardless
-    // of keyword matching — it's the flagship example, not user-generated content.
-    const theme = ev.id === 'seed-1' ? THEMES.love : pickTheme(ev.title);
+    const theme = pickTheme(ev.title);
     applyTheme(theme, ev.customColor);
     renderDecorations(ev);
 
@@ -1868,6 +1897,27 @@
   const milestonesCountEl = document.getElementById('milestonesCount');
   const addMilestoneForm = document.getElementById('addMilestoneForm');
   const newMilestoneInput = document.getElementById('newMilestoneTitle');
+  const newMilestoneDueInput = document.getElementById('newMilestoneDue');
+
+  // Days left is computed from calendar dates only (not time-of-day), so
+  // "due today" and "N days left" read naturally regardless of what time
+  // it currently is.
+  function daysUntil(dueDateStr){
+    const due = new Date(dueDateStr + 'T00:00:00');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return Math.round((due - today) / 86400000);
+  }
+
+  function formatMilestoneDue(m){
+    if (!m.dueDate) return null;
+    const label = new Date(m.dueDate + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    if (m.completed) return { text: `Due ${label}`, cls: '' };
+    const days = daysUntil(m.dueDate);
+    if (days < 0) return { text: `${label} · ${Math.abs(days)}d overdue`, cls: 'overdue' };
+    if (days === 0) return { text: `${label} · due today`, cls: 'due-today' };
+    return { text: `${label} · ${days}d left`, cls: '' };
+  }
 
   function renderMilestones(){
     const list = getMilestones(currentEvent);
@@ -1887,10 +1937,23 @@
       check.addEventListener('click', () => toggleMilestone(m.id));
       item.appendChild(check);
 
+      const main = document.createElement('div');
+      main.className = 'milestone-main';
+
       const label = document.createElement('span');
       label.className = 'milestone-label';
       label.textContent = m.title;
-      item.appendChild(label);
+      main.appendChild(label);
+
+      const due = formatMilestoneDue(m);
+      if (due){
+        const dueEl = document.createElement('span');
+        dueEl.className = 'milestone-due' + (due.cls ? ` ${due.cls}` : '');
+        dueEl.textContent = due.text;
+        main.appendChild(dueEl);
+      }
+
+      item.appendChild(main);
 
       const del = document.createElement('span');
       del.className = 'milestone-delete';
@@ -1932,9 +1995,11 @@
       id: `m-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       title,
       completed: false,
+      dueDate: newMilestoneDueInput.value || null,
     });
     saveEvents();
     newMilestoneInput.value = '';
+    newMilestoneDueInput.value = '';
     renderMilestones();
     renderDecorations(currentEvent);
   });

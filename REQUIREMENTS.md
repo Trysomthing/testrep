@@ -64,13 +64,10 @@ Important: **the illustration shape always comes from keyword matching
 only.** Nothing about custom colors below ever changes which picture is
 drawn — only its colors.
 
-**Special case:** the seed event (id `seed-1`, "Only 16 KM away") always
-shows the `love` illustration (couple hugging + heart), regardless of
-keyword matching — it's the flagship example the app ships with, not
-user-generated content, so it's hardcoded rather than relying on its title
-to accidentally match a keyword. This only applies to that one event id;
-every other event (including one a user renames to the same title) goes
-through normal keyword matching.
+Every event, including the seed event, is re-matched against its *current*
+title every time it's displayed — so editing an event's title (including
+the seed event) always updates its illustration. There is no hardcoded
+exception for any event id.
 
 ### Manual color override
 
@@ -96,14 +93,23 @@ storage beyond the event object):
 
 ### Milestones checklist
 
-- Each event has a `milestones` array: `{ id, title, completed }`.
+- Each event has a `milestones` array: `{ id, title, completed, dueDate }`.
+  `dueDate` is an optional `YYYY-MM-DD` string.
 - A "Milestones" panel (between the progress bar and the Add to
   Calendar/Export buttons) shows a checklist for the active event's
   milestones, a `done/total` counter, a checkbox to toggle each one done/
-  not-done, a "×" to delete one, and a text input + button to add a new
-  one. Changes save to `localStorage` immediately.
-- The seed event ships with 4 example milestones (2 already completed);
-  a newly-created event starts with none.
+  not-done, a "×" to delete one, and a title input + optional due-date
+  picker + button to add a new one. Changes save to `localStorage`
+  immediately.
+- The seed event ships with 4 example milestones (2 already completed,
+  each with a due date); a newly-created event starts with none.
+- When a milestone has a due date, it's shown under the title as:
+  - an incomplete milestone past its due date — `"<date> · Nd overdue"`;
+  - due today — `"<date> · due today"`;
+  - due in the future — `"<date> · Nd left"`;
+  - a completed milestone — just `"Due <date>"` (no countdown, since it's
+    done). Days are calculated from calendar dates only, ignoring time of
+    day. A milestone with no due date shows no badge at all.
 
 ### Milestone-driven decorations
 
