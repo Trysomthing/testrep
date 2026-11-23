@@ -104,21 +104,38 @@ Bold, chunky, sticker-styled — not glassmorphic. The defining elements:
 Each event's title is lowercased and keyword-matched (substring match)
 against a fixed list of themes, checked **in this priority order**:
 
-`memorial → birthday → travel → work → love → generic (fallback)`
+`memorial → birthday → travel → tennis → soccer → basketball → sports → work → love → generic (fallback)`
 
 Order matters — `memorial` is checked first on purpose so a serious event
 can never be miscategorized by an incidental word match further down the
 list. The first theme with a matching keyword wins; if none match, the
 event falls back to `generic`.
 
+Sport-specific events (tennis, football/soccer, basketball) each get
+their own ball/equipment illustration rather than one shared "sports"
+picture — a generic sports image reading as a *specific other* sport
+(e.g. a tennis racket showing up for a football event) looked exactly as
+wrong as the generic fallback did before `sports` existed at all. Any
+other sport/competition keyword falls through to a neutral trophy.
+
 | Theme | Keywords | Palette | Illustration |
 |---|---|---|---|
 | `memorial` | cemetery, funeral, memorial, gravesite, grave, wake, vigil, remembrance, burial, headstone, condolence, mourning, in memory | muted slate / silver / lavender | lit candle with flowers |
 | `birthday` | birthday, bday, born | warm orange / yellow / pink | balloon bouquet + confetti |
 | `travel` | trip, travel, flight, vacation, holiday, cruise, journey, getaway | sky blue / indigo / yellow | paper airplane + motion trails + clouds |
+| `tennis` | tennis | tennis-ball green / white / court blue | tennis racket + ball with motion lines |
+| `soccer` | football, soccer | pitch green / white / sky blue | soccer ball (pentagon pattern) + grass |
+| `basketball` | basketball | ball orange / white / red | basketball + hoop |
+| `sports` (catch-all) | sports, sport, match, tournament, championship, playoff, baseball, hockey, golf, marathon, race, game day, gym, workout | gold / white / rose | trophy |
 | `work` | launch, deadline, work, meeting, interview, exam, presentation, project, conference, release, demo, graduation | emerald / blue / purple | rocket with flame + stars |
 | `love` | love, anniversary, wedding, valentine, honeymoon, engagement, propose, proposal, date night, romance, marry, married | purple / pink / blue | couple hugging + pulsing heart |
 | `generic` (fallback) | *(none — used when nothing else matches)* | purple / pink / blue (same as `love`) | hourglass with falling sand |
+
+Covering every possible event type exactly isn't realistic for a fixed
+keyword list — when you hit a gap like `sports`/`tennis` was, say so and
+it gets added, the same way this one was (and the same way the generic
+`sports` bucket was then split into per-sport themes once a mismatch
+showed up there too).
 
 Important: **the illustration shape always comes from keyword matching
 only.** Nothing about custom colors below ever changes which picture is
@@ -218,9 +235,53 @@ are all hidden during Image/GIF export (same mechanism as the existing
 export hide-list) — the decoration motifs baked into the illustration
 itself are *not* hidden, since they're part of the artwork being exported.
 
+## Assignments
+
+A second panel, right below Milestones, for delegating tasks to specific
+people — e.g. after sharing the countdown with family/friends, "assign"
+someone a job rather than tracking your own to-dos.
+
+- Each event has an `assignments` array: `{ id, person, task, completed }`.
+  `person` is freeform text (no contact list/picker — just a name typed in)
+  and `task` is what they're meant to do.
+- Structurally and visually a twin of the Milestones panel, down to reusing
+  the same CSS classes: a `done/total` counter, a checkbox per row to mark
+  an assignment done/not-done, a "×" to delete one, and the same
+  show-only-when-there's-something-to-show behavior — no bordered panel
+  chrome at all when there are zero assignments and the add form is
+  closed, just a plain "+ Add assignment" button (sitting directly under
+  "+ Add milestone"). The panel (and its header/border) reappears once
+  there's an assignment or the add form is open, same rules as Milestones.
+- Adding one asks for two fields: who (`person`) and what (`task`); both
+  are required. No due date (unlike milestones) — kept deliberately
+  simple for now.
+- Each row shows the task as the primary (bold) line and the assigned
+  person as the secondary line underneath — you're scanning for what
+  needs doing first, who's doing it second.
+- The seed event ships with 2 example assignments (1 already completed);
+  a newly-created event starts with none.
+- Unlike milestones, assignments do **not** drive the illustration
+  decorations or any other gamification — they're a separate, independent
+  checklist.
+
+## Top row layout
+
+The events dropdown trigger, the Add to Calendar icon, and the Share icon
+all sit together in one row at the top of the page (`.top-row`), not
+spread between the top and a button row near the bottom. The events
+trigger shrinks to share the row with the two icons, but its dropdown
+panel still spans the full row width (positioned against `.top-row`, not
+the trigger itself) so the event list stays comfortably wide. The
+Calendar dropdown menu opens anchored to its own right edge rather than
+centered under the button, so it can't run off the side of the screen
+now that the button sits near the right side of a narrow row.
+
 ## Add to Calendar
 
-Dropdown with two options, both driven by the currently active event
+Icon-only button (calendar icon, no visible label — `aria-label`/`title`
+carry "Add to Calendar" for accessibility), in the top row next to the
+events dropdown and Share. Opens a dropdown with two
+options, both driven by the currently active event
 (title, date/time, location, description; duration defaults to 1 hour):
 - **Google Calendar** — opens a prefilled event-creation link in a new tab
   (includes the viewer's timezone).
@@ -228,6 +289,12 @@ Dropdown with two options, both driven by the currently active event
   `VCALENDAR`/`VEVENT` file.
 
 ## Export
+
+**Currently hidden from the UI** (the "Export" button/dropdown is in the
+DOM with the `hidden` attribute, not removed — a deliberate, easily-reversed
+toggle, not a deleted feature). Re-enable by dropping that attribute from
+`.export-wrap` in `index.html`. The feature code, its tests, and the
+description below are otherwise unchanged and current.
 
 Dropdown with four options, all client-side, no server/library:
 - **Save as Image (PNG)** — renders the page (minus buttons/chrome) to a
@@ -263,12 +330,13 @@ Dropdown with four options, all client-side, no server/library:
   extension. Fully self-contained.
 - **Copy Image to Clipboard** — copies a PNG snapshot via the Clipboard API.
 
-**Share** is its own standalone icon-only button next to Add to
-Calendar/Export (not a dropdown item) — uses `navigator.share()` with the
-image attached as a file where supported (mobile Chrome/Safari, opens the
-native share sheet: WhatsApp, Telegram, Email, etc.). Falls back to
-copying the image to the clipboard plus a toast message on browsers
-without file-sharing support (most desktop browsers).
+**Share** is its own standalone icon-only button next to Add to Calendar
+(not a dropdown item; Export, also normally in that row, is currently
+hidden — see above) — uses `navigator.share()` with the image attached as
+a file where supported (mobile Chrome/Safari, opens the native share
+sheet: WhatsApp, Telegram, Email, etc.). Falls back to copying the image
+to the clipboard plus a toast message on browsers without file-sharing
+support (most desktop browsers).
 
 All exports (PNG, GIF, clipboard copy, share) hide the events dropdown,
 the calendar/export/share buttons themselves, the footer, and any open
