@@ -104,7 +104,7 @@ Bold, chunky, sticker-styled — not glassmorphic. The defining elements:
 Each event's title is lowercased and keyword-matched (substring match)
 against a fixed list of themes, checked **in this priority order**:
 
-`memorial → birthday → travel → work → love → generic (fallback)`
+`memorial → birthday → travel → sports → work → love → generic (fallback)`
 
 Order matters — `memorial` is checked first on purpose so a serious event
 can never be miscategorized by an incidental word match further down the
@@ -116,9 +116,14 @@ event falls back to `generic`.
 | `memorial` | cemetery, funeral, memorial, gravesite, grave, wake, vigil, remembrance, burial, headstone, condolence, mourning, in memory | muted slate / silver / lavender | lit candle with flowers |
 | `birthday` | birthday, bday, born | warm orange / yellow / pink | balloon bouquet + confetti |
 | `travel` | trip, travel, flight, vacation, holiday, cruise, journey, getaway | sky blue / indigo / yellow | paper airplane + motion trails + clouds |
+| `sports` | tennis, sports, sport, match, tournament, championship, playoff, soccer, football, basketball, baseball, hockey, golf, marathon, race, game day, gym, workout | tennis-ball green / white / court blue | tennis racket + ball with motion lines |
 | `work` | launch, deadline, work, meeting, interview, exam, presentation, project, conference, release, demo, graduation | emerald / blue / purple | rocket with flame + stars |
 | `love` | love, anniversary, wedding, valentine, honeymoon, engagement, propose, proposal, date night, romance, marry, married | purple / pink / blue | couple hugging + pulsing heart |
 | `generic` (fallback) | *(none — used when nothing else matches)* | purple / pink / blue (same as `love`) | hourglass with falling sand |
+
+Covering every possible event type exactly isn't realistic for a fixed
+keyword list — when you hit a gap like `sports`/`tennis` was, say so and
+it gets added, the same way this one was.
 
 Important: **the illustration shape always comes from keyword matching
 only.** Nothing about custom colors below ever changes which picture is

@@ -1446,10 +1446,10 @@
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   // ---- Per-event visual theme, guessed from the title ----
-  // "love" is also the fallback for anything that matches no keyword below,
-  // so existing/seed events keep the original couple-hugging look.
-  // Illustration gradients reference the CSS accent variables directly, so
-  // the same recolor mechanism drives both auto-detected themes and a
+  // Anything that matches no theme's keywords falls back to `generic` (a
+  // neutral hourglass) rather than guessing — see pickTheme() below.
+  // Illustration fills reference the CSS accent variables directly, so the
+  // same recolor mechanism drives both auto-detected themes and a
   // manually picked custom color (see deriveTriadFromColor below).
   const THEMES = {
     love: {
@@ -1522,6 +1522,26 @@
         <path d="M144,155 L170,175 L144,130 Z" fill="var(--accent-2)" stroke="var(--ink)" stroke-width="6" stroke-linejoin="round"/>
       `,
     },
+    sports: {
+      keywords: ['tennis', 'sports', 'sport', 'match', 'tournament', 'championship', 'playoff', 'soccer', 'football', 'basketball', 'baseball', 'hockey', 'golf', 'marathon', 'race', 'game day', 'gym', 'workout'],
+      colors: { a1: '#a3e635', a2: '#f8fafc', a3: '#38bdf8' },
+      bg: { bg1: '#04170b', bg2: '#0b2a14' },
+      svg: `
+        <g transform="rotate(-18 95 120)">
+          <ellipse cx="95" cy="70" rx="34" ry="46" fill="var(--accent-3)" stroke="var(--ink)" stroke-width="6" stroke-linejoin="round"/>
+          <ellipse cx="95" cy="70" rx="24" ry="36" fill="none" stroke="var(--ink)" stroke-width="2" opacity="0.55"/>
+          <line x1="95" y1="34" x2="95" y2="106" stroke="var(--ink)" stroke-width="2" opacity="0.4"/>
+          <line x1="71" y1="70" x2="119" y2="70" stroke="var(--ink)" stroke-width="2" opacity="0.4"/>
+          <rect x="88" y="112" width="14" height="80" rx="6" fill="var(--accent-2)" stroke="var(--ink)" stroke-width="6" stroke-linejoin="round"/>
+        </g>
+        <circle cx="168" cy="150" r="30" fill="var(--accent-1)" stroke="var(--ink)" stroke-width="6"/>
+        <path d="M144,132 C156,142 156,158 144,168" fill="none" stroke="var(--accent-2)" stroke-width="3" stroke-linecap="round"/>
+        <path d="M192,132 C180,142 180,158 192,168" fill="none" stroke="var(--accent-2)" stroke-width="3" stroke-linecap="round"/>
+        <path d="M205,118 L216,110" stroke="var(--accent-1)" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+        <path d="M208,134 L220,131" stroke="var(--accent-1)" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+        <path d="M205,150 L217,155" stroke="var(--accent-1)" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+      `,
+    },
     memorial: {
       keywords: ['cemetery', 'funeral', 'memorial', 'gravesite', 'grave', 'wake', 'vigil', 'remembrance', 'burial', 'headstone', 'condolence', 'mourning', 'in memory'],
       colors: { a1: '#64748b', a2: '#9ca3af', a3: '#b8a9d9' },
@@ -1571,7 +1591,7 @@
     },
   };
 
-  const THEME_PRIORITY = ['memorial', 'birthday', 'travel', 'work', 'love'];
+  const THEME_PRIORITY = ['memorial', 'birthday', 'travel', 'sports', 'work', 'love'];
 
   function pickTheme(title){
     const lower = (title || '').toLowerCase();
