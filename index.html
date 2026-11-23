@@ -541,16 +541,13 @@
   }
 
   .cal-btn{
-    display:inline-flex;
+    display:flex;
     align-items:center;
-    gap:10px;
-    padding:14px 26px;
+    justify-content:center;
+    width:50px;
+    height:50px;
     border:3px solid var(--ink);
-    border-radius:999px;
-    font-family:inherit;
-    font-size:clamp(13px, 1.8vw, 15px);
-    font-weight:800;
-    letter-spacing:0.01em;
+    border-radius:50%;
     color:var(--ink);
     background:var(--accent-1);
     cursor:pointer;
@@ -562,7 +559,7 @@
     box-shadow:2px 2px 0 var(--ink);
   }
   .cal-btn:active{ transform:translate(4px, 4px); box-shadow:0 0 0 var(--ink); }
-  .cal-btn svg{ width:18px; height:18px; flex-shrink:0; }
+  .cal-btn svg{ width:20px; height:20px; flex-shrink:0; }
 
   .cal-menu{
     position:absolute;
@@ -1232,14 +1229,35 @@
       </form>
     </div>
 
+    <div class="milestones" id="assignments">
+      <div class="milestones-head">
+        <span class="milestones-title">Assignments</span>
+        <span class="milestones-count" id="assignmentsCount">0/0</span>
+      </div>
+      <div class="milestones-list" id="assignmentsList"></div>
+      <button type="button" class="milestone-add-toggle" id="assignmentAddToggle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+        Add assignment
+      </button>
+      <form class="milestone-add-row" id="addAssignmentForm" hidden>
+        <input id="newAssignmentPerson" type="text" placeholder="Who…" maxlength="40" autocomplete="off">
+        <input id="newAssignmentTask" type="text" placeholder="What to do…" maxlength="80" autocomplete="off">
+        <button type="submit" class="milestone-add-btn" aria-label="Add assignment">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+        </button>
+        <button type="button" class="milestone-add-cancel" id="cancelAssignmentBtn" aria-label="Cancel adding an assignment">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+        </button>
+      </form>
+    </div>
+
     <div class="cta-row">
       <div class="cal-wrap">
-        <button class="cal-btn" id="calBtn" type="button" aria-haspopup="true" aria-expanded="false">
+        <button class="cal-btn" id="calBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Add to Calendar" title="Add to Calendar">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="5" width="18" height="16" rx="3"></rect>
             <path d="M16 3v4M8 3v4M3 10h18"></path>
           </svg>
-          Add to Calendar
         </button>
 
         <div class="cal-menu" id="calMenu">
@@ -1254,7 +1272,7 @@
         </div>
       </div>
 
-      <div class="export-wrap">
+      <div class="export-wrap" hidden>
         <button class="export-btn" id="exportBtn" type="button" aria-haspopup="true" aria-expanded="false">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="3" width="18" height="18" rx="3"></rect>
@@ -1353,6 +1371,10 @@
         { id: 'm-seed-2', title: 'Send invitations', completed: true, dueDate: '2026-09-15' },
         { id: 'm-seed-3', title: 'Final dress fitting', completed: false, dueDate: '2026-09-28' },
         { id: 'm-seed-4', title: 'Rehearsal dinner', completed: false, dueDate: '2026-10-02' },
+      ],
+      assignments: [
+        { id: 'a-seed-1', person: 'Mom', task: 'Bring extra folding chairs', completed: false },
+        { id: 'a-seed-2', person: 'Dad', task: 'Pick up the cake', completed: true },
       ],
     }];
   }
@@ -1644,6 +1666,7 @@
   // and, at zero, fires a confetti burst.
 
   function getMilestones(ev){ return (ev && ev.milestones) || []; }
+  function getAssignments(ev){ return (ev && ev.assignments) || []; }
 
   function milestoneProgress(ev){
     const list = getMilestones(ev);
@@ -1746,6 +1769,8 @@
 
     closeMilestoneForm();
     renderMilestones();
+    closeAssignmentForm();
+    renderAssignments();
 
     els.title.textContent = ev.title;
     document.title = `${ev.title} — Countdown`;
@@ -2098,6 +2123,7 @@
         description,
         customColor,
         milestones: [],
+        assignments: [],
       };
       events.push(newEvent);
       saveEvents();
@@ -2249,6 +2275,119 @@
     closeMilestoneForm();
     renderMilestones();
     renderDecorations(currentEvent);
+  });
+
+  // ---- Assignments: tasks delegated to specific people, e.g. after sharing ----
+  const assignmentsEl = document.getElementById('assignments');
+  const assignmentsListEl = document.getElementById('assignmentsList');
+  const assignmentsCountEl = document.getElementById('assignmentsCount');
+  const addAssignmentForm = document.getElementById('addAssignmentForm');
+  const newAssignmentPersonInput = document.getElementById('newAssignmentPerson');
+  const newAssignmentTaskInput = document.getElementById('newAssignmentTask');
+  const assignmentAddToggle = document.getElementById('assignmentAddToggle');
+  const cancelAssignmentBtn = document.getElementById('cancelAssignmentBtn');
+
+  function updateAssignmentsPanelVisibility(){
+    const hasAssignments = getAssignments(currentEvent).length > 0;
+    const formOpen = !addAssignmentForm.hidden;
+    assignmentsEl.classList.toggle('chromeless', !hasAssignments && !formOpen);
+  }
+
+  function openAssignmentForm(){
+    assignmentAddToggle.hidden = true;
+    addAssignmentForm.hidden = false;
+    updateAssignmentsPanelVisibility();
+    newAssignmentPersonInput.focus();
+  }
+
+  function closeAssignmentForm(){
+    addAssignmentForm.reset();
+    addAssignmentForm.hidden = true;
+    assignmentAddToggle.hidden = false;
+    updateAssignmentsPanelVisibility();
+  }
+
+  assignmentAddToggle.addEventListener('click', openAssignmentForm);
+  cancelAssignmentBtn.addEventListener('click', closeAssignmentForm);
+
+  function renderAssignments(){
+    const list = getAssignments(currentEvent);
+    assignmentsListEl.innerHTML = '';
+
+    list.forEach((a) => {
+      const item = document.createElement('div');
+      item.className = 'milestone-item' + (a.completed ? ' completed' : '');
+
+      const check = document.createElement('button');
+      check.type = 'button';
+      check.className = 'milestone-check';
+      check.setAttribute('aria-label', a.completed ? `Mark "${a.task}" not done` : `Mark "${a.task}" done`);
+      check.innerHTML = a.completed
+        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>'
+        : '';
+      check.addEventListener('click', () => toggleAssignment(a.id));
+      item.appendChild(check);
+
+      const main = document.createElement('div');
+      main.className = 'milestone-main';
+
+      const label = document.createElement('span');
+      label.className = 'milestone-label';
+      label.textContent = a.task;
+      main.appendChild(label);
+
+      const personEl = document.createElement('span');
+      personEl.className = 'milestone-due';
+      personEl.textContent = a.person;
+      main.appendChild(personEl);
+
+      item.appendChild(main);
+
+      const del = document.createElement('span');
+      del.className = 'milestone-delete';
+      del.textContent = '×';
+      del.setAttribute('role', 'button');
+      del.setAttribute('aria-label', `Remove "${a.task}"`);
+      del.addEventListener('click', () => deleteAssignment(a.id));
+      item.appendChild(del);
+
+      assignmentsListEl.appendChild(item);
+    });
+
+    const done = list.filter((a) => a.completed).length;
+    assignmentsCountEl.textContent = `${done}/${list.length}`;
+    updateAssignmentsPanelVisibility();
+  }
+
+  function toggleAssignment(assignmentId){
+    const a = getAssignments(currentEvent).find((x) => x.id === assignmentId);
+    if (!a) return;
+    a.completed = !a.completed;
+    saveEvents();
+    renderAssignments();
+  }
+
+  function deleteAssignment(assignmentId){
+    currentEvent.assignments = getAssignments(currentEvent).filter((x) => x.id !== assignmentId);
+    saveEvents();
+    renderAssignments();
+  }
+
+  addAssignmentForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const person = newAssignmentPersonInput.value.trim();
+    const task = newAssignmentTaskInput.value.trim();
+    if (!person || !task) return;
+    if (!currentEvent.assignments) currentEvent.assignments = [];
+    currentEvent.assignments.push({
+      id: `a-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      person,
+      task,
+      completed: false,
+    });
+    saveEvents();
+    closeAssignmentForm();
+    renderAssignments();
   });
 
   renderEventsMenu();

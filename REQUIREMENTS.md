@@ -218,9 +218,40 @@ are all hidden during Image/GIF export (same mechanism as the existing
 export hide-list) — the decoration motifs baked into the illustration
 itself are *not* hidden, since they're part of the artwork being exported.
 
+## Assignments
+
+A second panel, right below Milestones, for delegating tasks to specific
+people — e.g. after sharing the countdown with family/friends, "assign"
+someone a job rather than tracking your own to-dos.
+
+- Each event has an `assignments` array: `{ id, person, task, completed }`.
+  `person` is freeform text (no contact list/picker — just a name typed in)
+  and `task` is what they're meant to do.
+- Structurally and visually a twin of the Milestones panel, down to reusing
+  the same CSS classes: a `done/total` counter, a checkbox per row to mark
+  an assignment done/not-done, a "×" to delete one, and the same
+  show-only-when-there's-something-to-show behavior — no bordered panel
+  chrome at all when there are zero assignments and the add form is
+  closed, just a plain "+ Add assignment" button (sitting directly under
+  "+ Add milestone"). The panel (and its header/border) reappears once
+  there's an assignment or the add form is open, same rules as Milestones.
+- Adding one asks for two fields: who (`person`) and what (`task`); both
+  are required. No due date (unlike milestones) — kept deliberately
+  simple for now.
+- Each row shows the task as the primary (bold) line and the assigned
+  person as the secondary line underneath — you're scanning for what
+  needs doing first, who's doing it second.
+- The seed event ships with 2 example assignments (1 already completed);
+  a newly-created event starts with none.
+- Unlike milestones, assignments do **not** drive the illustration
+  decorations or any other gamification — they're a separate, independent
+  checklist.
+
 ## Add to Calendar
 
-Dropdown with two options, both driven by the currently active event
+Icon-only button (calendar icon, no visible label — `aria-label`/`title`
+carry "Add to Calendar" for accessibility). Opens a dropdown with two
+options, both driven by the currently active event
 (title, date/time, location, description; duration defaults to 1 hour):
 - **Google Calendar** — opens a prefilled event-creation link in a new tab
   (includes the viewer's timezone).
@@ -228,6 +259,12 @@ Dropdown with two options, both driven by the currently active event
   `VCALENDAR`/`VEVENT` file.
 
 ## Export
+
+**Currently hidden from the UI** (the "Export" button/dropdown is in the
+DOM with the `hidden` attribute, not removed — a deliberate, easily-reversed
+toggle, not a deleted feature). Re-enable by dropping that attribute from
+`.export-wrap` in `index.html`. The feature code, its tests, and the
+description below are otherwise unchanged and current.
 
 Dropdown with four options, all client-side, no server/library:
 - **Save as Image (PNG)** — renders the page (minus buttons/chrome) to a
@@ -263,12 +300,13 @@ Dropdown with four options, all client-side, no server/library:
   extension. Fully self-contained.
 - **Copy Image to Clipboard** — copies a PNG snapshot via the Clipboard API.
 
-**Share** is its own standalone icon-only button next to Add to
-Calendar/Export (not a dropdown item) — uses `navigator.share()` with the
-image attached as a file where supported (mobile Chrome/Safari, opens the
-native share sheet: WhatsApp, Telegram, Email, etc.). Falls back to
-copying the image to the clipboard plus a toast message on browsers
-without file-sharing support (most desktop browsers).
+**Share** is its own standalone icon-only button next to Add to Calendar
+(not a dropdown item; Export, also normally in that row, is currently
+hidden — see above) — uses `navigator.share()` with the image attached as
+a file where supported (mobile Chrome/Safari, opens the native share
+sheet: WhatsApp, Telegram, Email, etc.). Falls back to copying the image
+to the clipboard plus a toast message on browsers without file-sharing
+support (most desktop browsers).
 
 All exports (PNG, GIF, clipboard copy, share) hide the events dropdown,
 the calendar/export/share buttons themselves, the footer, and any open
