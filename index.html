@@ -680,6 +680,26 @@
   .export-btn:disabled{ opacity:0.6; cursor:wait; transform:none; }
   .export-btn svg{ width:18px; height:18px; flex-shrink:0; }
 
+  .icon-btn{
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:50px;
+    height:50px;
+    border-radius:50%;
+    border:3px solid var(--ink);
+    background:var(--text);
+    color:var(--ink);
+    cursor:pointer;
+    box-shadow:var(--shadow-x) var(--shadow-y) 0 var(--ink);
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .icon-btn:hover{ transform:translate(2px, 2px); box-shadow:2px 2px 0 var(--ink); }
+  .icon-btn:active{ transform:translate(4px, 4px); box-shadow:0 0 0 var(--ink); }
+  .icon-btn:disabled{ opacity:0.6; cursor:wait; transform:none; }
+  .icon-btn svg{ width:20px; height:20px; flex-shrink:0; }
+
   .cta-row{
     display:flex;
     flex-wrap:wrap;
@@ -1055,6 +1075,7 @@
 
   .exporting .cal-wrap,
   .exporting .export-wrap,
+  .exporting .icon-btn,
   .exporting footer,
   .exporting .toast,
   .exporting .events-dropdown,
@@ -1257,12 +1278,12 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M16 8V5a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2h3"></path></svg>
             <span id="copyImageBtnLabel">Copy Image to Clipboard</span>
           </button>
-          <button class="cal-option" id="shareBtn" type="button">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.6 10.6l6.8-3.9M8.6 13.4l6.8 3.9"></path></svg>
-            <span id="shareBtnLabel">Share… (WhatsApp, Telegram, Email)</span>
-          </button>
         </div>
       </div>
+
+      <button class="icon-btn" id="shareBtn" type="button" aria-label="Share (WhatsApp, Telegram, Email)" title="Share">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.6 10.6l6.8-3.9M8.6 13.4l6.8 3.9"></path></svg>
+      </button>
     </div>
   </div>
 
@@ -2722,6 +2743,18 @@
     }
   }
 
+  // The share button is a standalone icon button (no dropdown, no text
+  // label to swap to "Exporting…"), so it just disables itself — the
+  // .icon-btn:disabled style gives it the same wait-cursor/dimmed feedback.
+  async function withBusyButton(btn, fn){
+    btn.disabled = true;
+    try {
+      await fn();
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
   document.getElementById('exportPngBtn').addEventListener('click', () => {
     withBusyExport('Exporting…', exportAsPNG);
   });
@@ -2738,7 +2771,7 @@
   });
 
   document.getElementById('shareBtn').addEventListener('click', () => {
-    withBusyExport('Exporting…', shareImage);
+    withBusyButton(document.getElementById('shareBtn'), shareImage);
   });
 </script>
 </body>

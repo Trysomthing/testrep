@@ -262,14 +262,17 @@ Dropdown with four options, all client-side, no server/library:
   buckets), a real dictionary-based LZW compressor, NETSCAPE loop
   extension. Fully self-contained.
 - **Copy Image to Clipboard** — copies a PNG snapshot via the Clipboard API.
-- **Share… (WhatsApp, Telegram, Email)** — uses `navigator.share()` with
-  the image attached as a file where supported (mobile Chrome/Safari,
-  opens the native share sheet). Falls back to copying the image to the
-  clipboard plus a toast message on browsers without file-sharing support
-  (most desktop browsers).
 
-All four hide the events bar, the calendar/export buttons themselves, the
-footer, and any open modal from the captured output.
+**Share** is its own standalone icon-only button next to Add to
+Calendar/Export (not a dropdown item) — uses `navigator.share()` with the
+image attached as a file where supported (mobile Chrome/Safari, opens the
+native share sheet: WhatsApp, Telegram, Email, etc.). Falls back to
+copying the image to the clipboard plus a toast message on browsers
+without file-sharing support (most desktop browsers).
+
+All exports (PNG, GIF, clipboard copy, share) hide the events dropdown,
+the calendar/export/share buttons themselves, the footer, and any open
+modal from the captured output.
 
 ## Known limitations (accepted tradeoffs, not bugs)
 
