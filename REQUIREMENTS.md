@@ -104,26 +104,38 @@ Bold, chunky, sticker-styled — not glassmorphic. The defining elements:
 Each event's title is lowercased and keyword-matched (substring match)
 against a fixed list of themes, checked **in this priority order**:
 
-`memorial → birthday → travel → sports → work → love → generic (fallback)`
+`memorial → birthday → travel → tennis → soccer → basketball → sports → work → love → generic (fallback)`
 
 Order matters — `memorial` is checked first on purpose so a serious event
 can never be miscategorized by an incidental word match further down the
 list. The first theme with a matching keyword wins; if none match, the
 event falls back to `generic`.
 
+Sport-specific events (tennis, football/soccer, basketball) each get
+their own ball/equipment illustration rather than one shared "sports"
+picture — a generic sports image reading as a *specific other* sport
+(e.g. a tennis racket showing up for a football event) looked exactly as
+wrong as the generic fallback did before `sports` existed at all. Any
+other sport/competition keyword falls through to a neutral trophy.
+
 | Theme | Keywords | Palette | Illustration |
 |---|---|---|---|
 | `memorial` | cemetery, funeral, memorial, gravesite, grave, wake, vigil, remembrance, burial, headstone, condolence, mourning, in memory | muted slate / silver / lavender | lit candle with flowers |
 | `birthday` | birthday, bday, born | warm orange / yellow / pink | balloon bouquet + confetti |
 | `travel` | trip, travel, flight, vacation, holiday, cruise, journey, getaway | sky blue / indigo / yellow | paper airplane + motion trails + clouds |
-| `sports` | tennis, sports, sport, match, tournament, championship, playoff, soccer, football, basketball, baseball, hockey, golf, marathon, race, game day, gym, workout | tennis-ball green / white / court blue | tennis racket + ball with motion lines |
+| `tennis` | tennis | tennis-ball green / white / court blue | tennis racket + ball with motion lines |
+| `soccer` | football, soccer | pitch green / white / sky blue | soccer ball (pentagon pattern) + grass |
+| `basketball` | basketball | ball orange / white / red | basketball + hoop |
+| `sports` (catch-all) | sports, sport, match, tournament, championship, playoff, baseball, hockey, golf, marathon, race, game day, gym, workout | gold / white / rose | trophy |
 | `work` | launch, deadline, work, meeting, interview, exam, presentation, project, conference, release, demo, graduation | emerald / blue / purple | rocket with flame + stars |
 | `love` | love, anniversary, wedding, valentine, honeymoon, engagement, propose, proposal, date night, romance, marry, married | purple / pink / blue | couple hugging + pulsing heart |
 | `generic` (fallback) | *(none — used when nothing else matches)* | purple / pink / blue (same as `love`) | hourglass with falling sand |
 
 Covering every possible event type exactly isn't realistic for a fixed
 keyword list — when you hit a gap like `sports`/`tennis` was, say so and
-it gets added, the same way this one was.
+it gets added, the same way this one was (and the same way the generic
+`sports` bucket was then split into per-sport themes once a mismatch
+showed up there too).
 
 Important: **the illustration shape always comes from keyword matching
 only.** Nothing about custom colors below ever changes which picture is
