@@ -214,6 +214,21 @@
     font-weight:700;
   }
 
+  .location-line{
+    display:none;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    color:var(--muted);
+    font-size:clamp(12px, 1.8vw, 14px);
+    font-weight:600;
+    text-decoration:none;
+    transition:color .15s ease;
+  }
+  .location-line.has-location{ display:inline-flex; }
+  .location-line:hover{ color:var(--text); }
+  .location-line svg{ width:14px; height:14px; flex-shrink:0; }
+
   .grid{
     display:grid;
     grid-template-columns:repeat(4, 1fr);
@@ -979,6 +994,10 @@
     <div class="eyebrow">Countdown</div>
     <h1 id="title">Something big is coming</h1>
     <div class="subdate">Target &mdash; <span id="targetLabel"></span></div>
+    <a class="location-line" id="locationLine" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>
+      <span id="locationLineText"></span>
+    </a>
 
     <div class="grid" id="grid">
       <div class="card">
@@ -1181,6 +1200,8 @@
     done: document.getElementById('doneMsg'),
     progress: document.getElementById('progressBar'),
     targetLabel: document.getElementById('targetLabel'),
+    locationLine: document.getElementById('locationLine'),
+    locationLineText: document.getElementById('locationLineText'),
   };
 
   function pad2(n){ return String(n).padStart(2, '0'); }
@@ -1632,6 +1653,16 @@
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
       hour: '2-digit', minute: '2-digit'
     });
+
+    if (ev.location){
+      els.locationLineText.textContent = ev.location;
+      els.locationLine.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ev.location)}`;
+      els.locationLine.classList.add('has-location');
+    } else {
+      els.locationLine.classList.remove('has-location');
+      els.locationLine.removeAttribute('href');
+    }
+
     els.done.style.display = 'none';
     els.grid.style.opacity = '1';
 

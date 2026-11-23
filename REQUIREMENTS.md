@@ -21,6 +21,13 @@ Pages from `master`.
   minutes, then seconds. The other boxes shrink and dim slightly.
 - Progress bar spanning from the event's creation time to its target time.
 - "It's here! 🎉" done state once the countdown reaches zero.
+- When the active event has a location set, a small pin-icon line under the
+  target date shows the location text as a link that opens a Google Maps
+  search for it (`https://www.google.com/maps/search/?api=1&query=...`) in
+  a new tab — plain URL, no API key, no external script. Hidden entirely
+  when the event has no location. This is intentionally lightweight (no
+  live Google Places autocomplete) to keep the app dependency-free and
+  key-free, per this file's "What it is" section.
 
 ## Multiple events
 
