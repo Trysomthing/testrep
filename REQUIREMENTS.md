@@ -71,10 +71,14 @@ Bold, chunky, sticker-styled — not glassmorphic. The defining elements:
 - "+ New" opens a modal to add an event: title (required), date + time
   (required), location (optional), notes (optional), and an optional custom
   color override.
-- Each chip has a pencil icon to **edit** that event in place (same modal,
-  pre-filled, updates by id — never creates a duplicate) and a "×" to
-  **delete** it. The delete icon is hidden when it's the only event left —
-  you can never end up with zero events.
+- Chips show only the event's title and stay visually quiet (thin outline,
+  no date/controls) until selected, so a row of several events scans
+  cleanly instead of looking busy. The **active** chip is the one filled in
+  the accent color, and only it shows its date and its pencil icon to
+  **edit** that event in place (same modal, pre-filled, updates by id —
+  never creates a duplicate) and its "×" to **delete** it. The delete icon
+  is hidden when it's the only event left — you can never end up with zero
+  events.
 - Persisted in the browser's `localStorage` (no backend): the event list and
   which one is currently active both survive reloads.
 - Seed/default event on first load: "Only 16 KM away" — October 3, 2026,

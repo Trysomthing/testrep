@@ -657,40 +657,47 @@
   .events-bar::-webkit-scrollbar{ height:6px; }
   .events-bar::-webkit-scrollbar-thumb{ background:rgba(255,255,255,0.2); border-radius:999px; }
 
+  /* Inactive chips stay quiet (title only, thin border) so the row scans
+     easily; the active chip is the one bold accent-filled pill that also
+     reveals its edit/delete controls. */
   .event-chip{
     flex-shrink:0;
     display:inline-flex;
     align-items:center;
     gap:8px;
-    padding:9px 8px 9px 16px;
+    padding:9px 16px;
     border-radius:999px;
-    border:2px solid var(--ink);
-    background:var(--bg-2);
+    border:1.5px solid rgba(255,255,255,0.18);
+    background:transparent;
     color:var(--muted);
     font-family:inherit;
     font-size:13px;
-    font-weight:700;
+    font-weight:600;
     cursor:pointer;
     white-space:nowrap;
-    transition:background .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease;
+    transition:background .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease, padding .2s ease;
   }
-  .event-chip:hover{ box-shadow:2px 2px 0 var(--ink); }
+  .event-chip:hover{ border-color:rgba(255,255,255,0.4); color:var(--text); }
   .event-chip.active{
+    padding:9px 8px 9px 16px;
+    border:2px solid var(--ink);
     background:var(--accent-1);
-    border-color:var(--ink);
     color:var(--ink);
+    font-weight:700;
     box-shadow:2px 2px 0 var(--ink);
   }
 
   .event-chip-date{
+    display:none;
     opacity:0.75;
     font-weight:600;
     font-size:12px;
   }
+  .event-chip.active .event-chip-date{ display:inline; }
 
   .event-chip-edit,
   .event-chip-delete{
-    display:inline-flex;
+    display:none;
     align-items:center;
     justify-content:center;
     width:18px;
@@ -698,11 +705,13 @@
     border-radius:50%;
     font-size:14px;
     line-height:1;
-    opacity:0.6;
+    opacity:0.7;
     transition:opacity .15s ease, background .15s ease;
   }
+  .event-chip.active .event-chip-edit,
+  .event-chip.active .event-chip-delete{ display:inline-flex; }
   .event-chip-edit:hover,
-  .event-chip-delete:hover{ opacity:1; background:rgba(255,255,255,0.18); }
+  .event-chip-delete:hover{ opacity:1; background:rgba(0,0,0,0.15); }
   .event-chip-edit svg{ width:11px; height:11px; }
 
   .add-event-btn{
