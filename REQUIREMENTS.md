@@ -266,15 +266,70 @@ someone a job rather than tracking your own to-dos.
 
 ## Top row layout
 
-The events dropdown trigger, the Add to Calendar icon, and the Share icon
-all sit together in one row at the top of the page (`.top-row`), not
-spread between the top and a button row near the bottom. The events
-trigger shrinks to share the row with the two icons, but its dropdown
-panel still spans the full row width (positioned against `.top-row`, not
-the trigger itself) so the event list stays comfortably wide. The
-Calendar dropdown menu opens anchored to its own right edge rather than
+The events dropdown trigger, the Add to Calendar icon, the Share icon,
+and the language toggle all sit together in one row at the top of the
+page (`.top-row`), not spread between the top and a button row near the
+bottom. The events trigger shrinks to share the row with the icons, but
+its dropdown panel still spans the full row width (positioned against
+`.top-row`, not the trigger itself) so the event list stays comfortably
+wide. The Calendar dropdown menu opens anchored to its own trailing edge
+(`inset-inline-end`, which follows reading direction) rather than
 centered under the button, so it can't run off the side of the screen
-now that the button sits near the right side of a narrow row.
+now that the button sits near the edge of a narrow row.
+
+## Language & RTL (English / Hebrew)
+
+Full bilingual UI, not just RTL-for-content: a pill-shaped toggle button
+(`#langToggle`, in the top row) switches the app's own chrome — labels,
+placeholders, aria-labels, toasts, confirmations, error messages, date
+formatting — between English and Hebrew, and flips the whole page to a
+right-to-left layout when Hebrew is active. The toggle always shows the
+*other* language's own name (e.g. it reads "עברית" while in English), so
+it's legible regardless of which language is currently showing.
+
+- **Seed/demo content is never auto-translated.** Event titles,
+  milestone/assignment text a user types, and location/notes are left
+  exactly as authored — only the app's own interface strings are
+  localized. Proper nouns ("Google Calendar", "Apple / Outlook (.ics)")
+  are also left untranslated.
+- **String system:** a `STRINGS = { en: {...}, he: {...} }` dictionary
+  (plain strings plus parameterized function entries for strings that
+  interpolate an event/milestone title, a count, etc.) and a `t(key,
+  ...args)` lookup helper, with an automatic fallback to English for any
+  missing key.
+- **Static markup** is translated via `data-i18n` / `data-i18n-placeholder`
+  / `data-i18n-aria-label` / `data-i18n-title` attributes, applied by
+  `applyStaticTranslations()`.
+- **Dynamic strings** (toasts, `confirm()` prompts, the Add/Edit modal's
+  title and submit-button swap, form validation errors, milestone due-date
+  phrases, aria-labels built from a live title, the share text,
+  `document.title`) all go through `t()` at the point they're built,
+  rather than being translated after the fact.
+- **Locale-aware dates:** the three `toLocaleString`/`toLocaleDateString`
+  call sites (target date line, event-chip dates, milestone due dates)
+  use the active language's locale code (`en-US` / `he-IL`) instead of
+  the browser default, so Hebrew mode shows Hebrew month names.
+- **Persistence & detection:** the chosen language is saved to
+  `localStorage` (`countdown_lang_v1`) and restored on load; with no
+  saved choice yet, it's detected from `navigator.language` (Hebrew if it
+  starts with `he`, English otherwise). A small inline script in `<head>`
+  (before the main stylesheet/script) sets `<html lang>`/`dir`
+  synchronously from that same logic, so the page never flashes in the
+  wrong direction before the full script runs.
+- **RTL layout:** toggling Hebrew sets `document.documentElement.dir =
+  'rtl'`. Most of the layout (flex rows, the countdown grid including its
+  per-unit emphasis sizing) mirrors automatically under `dir="rtl"` with
+  no JS changes. A handful of physical left/right CSS properties were
+  converted to logical ones (`text-align: start` instead of `left`, the
+  Calendar menu's `inset-inline-end` instead of `right`) plus one explicit
+  `[dir="rtl"]` override for the Past-events disclosure triangle, which
+  otherwise points the wrong way. The decorative corner shapes (`.orb1/2/3`)
+  are intentionally left un-mirrored — purely cosmetic, not worth the
+  complexity.
+- **Switching language re-renders** the events dropdown, the active event
+  display, milestones, and assignments in place, so anything already on
+  screen picks up the new language immediately — not just content
+  rendered after the switch.
 
 ## Add to Calendar
 

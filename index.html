@@ -4,6 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Countdown</title>
+<script>
+  // Set lang/dir as early as possible (before the page paints) to avoid a
+  // flash of the wrong direction — the full language system loads later,
+  // in the main script at the bottom of the page.
+  (function(){
+    try {
+      var saved = localStorage.getItem('countdown_lang_v1');
+      var lang = saved || ((navigator.language || '').toLowerCase().indexOf('he') === 0 ? 'he' : 'en');
+      document.documentElement.lang = lang;
+      document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr';
+    } catch (err){ /* localStorage unavailable; defaults to lang="en" from the tag below */ }
+  })();
+</script>
 <style>
   :root{
     --bg-1:#0a0118;
@@ -335,7 +348,7 @@
     border-radius:18px;
     padding:14px 16px;
     box-shadow:4px 4px 0 var(--ink);
-    text-align:left;
+    text-align:start;
   }
 
   /* No milestones yet and not actively adding one — the bordered panel
@@ -565,7 +578,7 @@
   .cal-menu{
     position:absolute;
     top:calc(100% + 12px);
-    right:0;
+    inset-inline-end:0;
     transform:translateY(-6px);
     min-width:230px;
     background:var(--bg-2);
@@ -609,7 +622,7 @@
     font-family:inherit;
     font-size:14px;
     font-weight:600;
-    text-align:left;
+    text-align:start;
     text-decoration:none;
     cursor:pointer;
     transition:background .15s ease;
@@ -697,6 +710,27 @@
   .icon-btn:active{ transform:translate(4px, 4px); box-shadow:0 0 0 var(--ink); }
   .icon-btn:disabled{ opacity:0.6; cursor:wait; transform:none; }
   .icon-btn svg{ width:20px; height:20px; flex-shrink:0; }
+
+  .lang-toggle{
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    height:50px;
+    padding:0 14px;
+    border-radius:999px;
+    border:3px solid var(--ink);
+    background:var(--text);
+    color:var(--ink);
+    font-family:inherit;
+    font-size:13px;
+    font-weight:800;
+    cursor:pointer;
+    box-shadow:var(--shadow-x) var(--shadow-y) 0 var(--ink);
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .lang-toggle:hover{ transform:translate(2px, 2px); box-shadow:2px 2px 0 var(--ink); }
+  .lang-toggle:active{ transform:translate(4px, 4px); box-shadow:0 0 0 var(--ink); }
 
   .cta-row{
     display:flex;
@@ -849,7 +883,7 @@
     background:transparent;
     color:var(--text);
     font-family:inherit;
-    text-align:left;
+    text-align:start;
     cursor:pointer;
   }
   .event-row.active .event-row-main{ font-weight:800; }
@@ -916,6 +950,13 @@
   }
   .events-past[open] summary::before{ transform:rotate(90deg); }
   .events-past .events-group{ opacity:0.65; }
+  /* RTL: the closed-state triangle points the other way (toward the
+     reading direction's "collapsed" edge, mirroring the LTR one) — the
+     open-state rotation above still applies on top of this unchanged. */
+  [dir="rtl"] .events-past summary::before{
+    border-left:none;
+    border-right:4px solid var(--muted);
+  }
 
   .modal-backdrop{
     position:fixed;
@@ -944,7 +985,7 @@
     box-shadow:6px 6px 0 var(--ink);
     transform:translateY(14px) scale(0.98);
     transition:transform .25s ease;
-    text-align:left;
+    text-align:start;
   }
   .modal-backdrop.open .modal-card{ transform:translateY(0) scale(1); }
 
@@ -1150,7 +1191,7 @@
       </div>
 
       <div class="cal-wrap">
-        <button class="cal-btn" id="calBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Add to Calendar" title="Add to Calendar">
+        <button class="cal-btn" id="calBtn" type="button" aria-haspopup="true" aria-expanded="false" data-i18n-aria-label="addToCalendar" data-i18n-title="addToCalendar">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="5" width="18" height="16" rx="3"></rect>
             <path d="M16 3v4M8 3v4M3 10h18"></path>
@@ -1169,14 +1210,16 @@
         </div>
       </div>
 
-      <button class="icon-btn" id="shareBtn" type="button" aria-label="Share (WhatsApp, Telegram, Email)" title="Share">
+      <button class="icon-btn" id="shareBtn" type="button" data-i18n-aria-label="shareFull" data-i18n-title="share">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.6 10.6l6.8-3.9M8.6 13.4l6.8 3.9"></path></svg>
       </button>
+
+      <button class="lang-toggle" id="langToggle" type="button"></button>
 
       <div class="events-panel" id="eventsPanel">
         <button type="button" class="events-panel-add" id="eventsPanelAddBtn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
-          New countdown
+          <span data-i18n="newCountdown">New countdown</span>
         </button>
         <div class="events-panel-list" id="eventsPanelList"></div>
       </div>
@@ -1214,9 +1257,9 @@
       <path class="heart" d="M120,38 C114,28 97,30 97,45 C97,58 120,73 120,73 C120,73 143,58 143,45 C143,30 126,28 120,38 Z" fill="#ec4899"/>
     </svg>
 
-    <div class="eyebrow">Countdown</div>
+    <div class="eyebrow" data-i18n="eyebrow">Countdown</div>
     <h1 id="title">Something big is coming</h1>
-    <div class="subdate">Target &mdash; <span id="targetLabel"></span></div>
+    <div class="subdate"><span data-i18n="targetPrefix">Target &mdash;</span> <span id="targetLabel"></span></div>
     <a class="location-line" id="locationLine" target="_blank" rel="noopener">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>
       <span id="locationLineText"></span>
@@ -1225,23 +1268,23 @@
     <div class="grid" id="grid">
       <div class="card">
         <div class="num" id="days">00</div>
-        <div class="label">Days</div>
+        <div class="label" data-i18n="days">Days</div>
       </div>
       <div class="card">
         <div class="num" id="hours">00</div>
-        <div class="label">Hours</div>
+        <div class="label" data-i18n="hours">Hours</div>
       </div>
       <div class="card">
         <div class="num" id="minutes">00</div>
-        <div class="label">Minutes</div>
+        <div class="label" data-i18n="minutes">Minutes</div>
       </div>
       <div class="card">
         <div class="num" id="seconds">00</div>
-        <div class="label">Seconds</div>
+        <div class="label" data-i18n="seconds">Seconds</div>
       </div>
     </div>
 
-    <div class="done" id="doneMsg">🎉 It's here!</div>
+    <div class="done" id="doneMsg" data-i18n="itsHere">🎉 It's here!</div>
 
     <div class="progress-wrap">
       <div class="progress-bar" id="progressBar"></div>
@@ -1249,21 +1292,21 @@
 
     <div class="milestones" id="milestones">
       <div class="milestones-head">
-        <span class="milestones-title">Milestones</span>
+        <span class="milestones-title" data-i18n="milestones">Milestones</span>
         <span class="milestones-count" id="milestonesCount">0/0</span>
       </div>
       <div class="milestones-list" id="milestonesList"></div>
       <button type="button" class="milestone-add-toggle" id="milestoneAddToggle">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
-        Add milestone
+        <span data-i18n="addMilestone">Add milestone</span>
       </button>
       <form class="milestone-add-row" id="addMilestoneForm" hidden>
-        <input id="newMilestoneTitle" type="text" placeholder="Add a milestone…" maxlength="60" autocomplete="off">
-        <input id="newMilestoneDue" type="date" aria-label="Due date (optional)">
-        <button type="submit" class="milestone-add-btn" aria-label="Add milestone">
+        <input id="newMilestoneTitle" type="text" data-i18n-placeholder="addMilestonePlaceholder" placeholder="Add a milestone…" maxlength="60" autocomplete="off">
+        <input id="newMilestoneDue" type="date" data-i18n-aria-label="dueDateOptional" aria-label="Due date (optional)">
+        <button type="submit" class="milestone-add-btn" data-i18n-aria-label="addMilestone" aria-label="Add milestone">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
         </button>
-        <button type="button" class="milestone-add-cancel" id="cancelMilestoneBtn" aria-label="Cancel adding a milestone">
+        <button type="button" class="milestone-add-cancel" id="cancelMilestoneBtn" data-i18n-aria-label="cancelAddingMilestone" aria-label="Cancel adding a milestone">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
         </button>
       </form>
@@ -1271,21 +1314,21 @@
 
     <div class="milestones" id="assignments">
       <div class="milestones-head">
-        <span class="milestones-title">Assignments</span>
+        <span class="milestones-title" data-i18n="assignments">Assignments</span>
         <span class="milestones-count" id="assignmentsCount">0/0</span>
       </div>
       <div class="milestones-list" id="assignmentsList"></div>
       <button type="button" class="milestone-add-toggle" id="assignmentAddToggle">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
-        Add assignment
+        <span data-i18n="addAssignment">Add assignment</span>
       </button>
       <form class="milestone-add-row" id="addAssignmentForm" hidden>
-        <input id="newAssignmentPerson" type="text" placeholder="Who…" maxlength="40" autocomplete="off">
-        <input id="newAssignmentTask" type="text" placeholder="What to do…" maxlength="80" autocomplete="off">
-        <button type="submit" class="milestone-add-btn" aria-label="Add assignment">
+        <input id="newAssignmentPerson" type="text" data-i18n-placeholder="whoPlaceholder" placeholder="Who…" maxlength="40" autocomplete="off">
+        <input id="newAssignmentTask" type="text" data-i18n-placeholder="whatToDoPlaceholder" placeholder="What to do…" maxlength="80" autocomplete="off">
+        <button type="submit" class="milestone-add-btn" data-i18n-aria-label="addAssignment" aria-label="Add assignment">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
         </button>
-        <button type="button" class="milestone-add-cancel" id="cancelAssignmentBtn" aria-label="Cancel adding an assignment">
+        <button type="button" class="milestone-add-cancel" id="cancelAssignmentBtn" data-i18n-aria-label="cancelAddingAssignment" aria-label="Cancel adding an assignment">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
         </button>
       </form>
@@ -1298,22 +1341,22 @@
           <circle cx="9" cy="9" r="2"></circle>
           <path d="M21 15l-5-5-4 4-3-3-6 6"></path>
         </svg>
-        <span id="exportBtnLabel">Export</span>
+        <span id="exportBtnLabel" data-i18n="export">Export</span>
       </button>
 
       <div class="cal-menu" id="exportMenu">
         <button class="cal-option" id="exportPngBtn" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"></rect><circle cx="9" cy="9" r="2"></circle><path d="M21 15l-5-5-4 4-3-3-6 6"></path></svg>
-          Save as Image (PNG)
+          <span data-i18n="saveAsImage">Save as Image (PNG)</span>
         </button>
         <button class="cal-option" id="exportGifBtn" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"></rect><path d="M7 10v4M11 10h1.5a1.5 1.5 0 010 3H11v-3zM17 10a2 2 0 100 4"></path></svg>
-          Save as GIF (animated)
+          <span data-i18n="saveAsGif">Save as GIF (animated)</span>
         </button>
         <div class="cal-divider"></div>
         <button class="cal-option" id="copyImageBtn" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M16 8V5a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2h3"></path></svg>
-          <span id="copyImageBtnLabel">Copy Image to Clipboard</span>
+          <span id="copyImageBtnLabel" data-i18n="copyImage">Copy Image to Clipboard</span>
         </button>
       </div>
     </div>
@@ -1323,53 +1366,243 @@
 
   <div class="modal-backdrop" id="addEventBackdrop">
     <div class="modal-card">
-      <h2 id="modalTitle">New Countdown</h2>
+      <h2 id="modalTitle" data-i18n="newCountdownTitle">New Countdown</h2>
       <form id="addEventForm">
         <div class="field">
-          <label for="newEventTitle">Title</label>
-          <input id="newEventTitle" type="text" placeholder="e.g. Sarah's Birthday" maxlength="80" autocomplete="off">
+          <label for="newEventTitle" data-i18n="titleLabel">Title</label>
+          <input id="newEventTitle" type="text" data-i18n-placeholder="titlePlaceholder" placeholder="e.g. Sarah's Birthday" maxlength="80" autocomplete="off">
         </div>
         <div class="field-row">
           <div class="field">
-            <label for="newEventDate">Date</label>
+            <label for="newEventDate" data-i18n="dateLabel">Date</label>
             <input id="newEventDate" type="date">
           </div>
           <div class="field">
-            <label for="newEventTime">Time</label>
+            <label for="newEventTime" data-i18n="timeLabel">Time</label>
             <input id="newEventTime" type="time">
           </div>
         </div>
         <div class="field">
-          <label for="newEventLocation">Location <span class="optional">(optional)</span></label>
-          <input id="newEventLocation" type="text" placeholder="e.g. Grandma's house" autocomplete="off">
+          <label for="newEventLocation"><span data-i18n="locationLabel">Location</span> <span class="optional" data-i18n="optional">(optional)</span></label>
+          <input id="newEventLocation" type="text" data-i18n-placeholder="locationPlaceholder" placeholder="e.g. Grandma's house" autocomplete="off">
         </div>
         <div class="field">
-          <label for="newEventNotes">Notes <span class="optional">(optional)</span></label>
-          <textarea id="newEventNotes" rows="2" placeholder="Anything worth remembering"></textarea>
+          <label for="newEventNotes"><span data-i18n="notesLabel">Notes</span> <span class="optional" data-i18n="optional">(optional)</span></label>
+          <textarea id="newEventNotes" rows="2" data-i18n-placeholder="notesPlaceholder" placeholder="Anything worth remembering"></textarea>
         </div>
         <div class="field color-field">
           <label class="checkbox-label">
             <input type="checkbox" id="useCustomColor">
-            Use a custom color <span class="optional">(otherwise auto-picked from the title)</span>
+            <span data-i18n="useCustomColor">Use a custom color</span> <span class="optional" data-i18n="autoPickedFromTitle">(otherwise auto-picked from the title)</span>
           </label>
           <input id="newEventColor" type="color" value="#a855f7" disabled>
         </div>
         <div class="form-error" id="formError"></div>
         <div class="modal-actions">
-          <button type="button" class="modal-btn ghost" id="cancelAddEvent">Cancel</button>
-          <button type="submit" class="modal-btn primary" id="submitEventBtn">Add Event</button>
+          <button type="button" class="modal-btn ghost" id="cancelAddEvent" data-i18n="cancel">Cancel</button>
+          <button type="submit" class="modal-btn primary" id="submitEventBtn" data-i18n="addEvent">Add Event</button>
         </div>
       </form>
     </div>
   </div>
 
-  <footer>Countdown &middot; local time</footer>
+  <footer data-i18n="footer">Countdown &middot; local time</footer>
 
 <script>
   // ---- Multiple events, persisted in this browser ----
   const STORAGE_EVENTS = 'countdown_events_v1';
   const STORAGE_ACTIVE = 'countdown_active_id_v1';
   const EVENT_DURATION_HOURS = 1;
+
+  // ---- i18n: English / Hebrew (RTL) ----
+  // Seed/demo event content (titles, milestones, assignments) is authored
+  // content and is never auto-translated — only the app's own chrome.
+  const STORAGE_LANG = 'countdown_lang_v1';
+
+  const STRINGS = {
+    en: {
+      locale: 'en-US',
+      eyebrow: 'Countdown',
+      targetPrefix: 'Target —',
+      days: 'Days', hours: 'Hours', minutes: 'Minutes', seconds: 'Seconds',
+      itsHere: "🎉 It's here!",
+      itsHereMemorial: 'The day is here',
+      addToCalendar: 'Add to calendar',
+      shareFull: 'Share this countdown',
+      share: 'Share',
+      newCountdown: 'New countdown',
+      todayGroup: 'Today',
+      thisWeekGroup: 'This week',
+      laterGroup: 'Later',
+      pastCount: (n) => `Past (${n})`,
+      editEvent: (title) => `Edit "${title}"`,
+      deleteEvent: (title) => `Delete "${title}"`,
+      confirmDeleteEvent: (title) => `Delete "${title}"?`,
+      milestones: 'Milestones',
+      addMilestone: 'Add milestone',
+      addMilestonePlaceholder: 'Add a milestone…',
+      dueDateOptional: 'Due date (optional)',
+      cancelAddingMilestone: 'Cancel adding a milestone',
+      assignments: 'Assignments',
+      addAssignment: 'Add assignment',
+      whoPlaceholder: 'Who…',
+      whatToDoPlaceholder: 'What to do…',
+      cancelAddingAssignment: 'Cancel adding an assignment',
+      markMilestoneComplete: (title) => `Mark "${title}" complete`,
+      markMilestoneIncomplete: (title) => `Mark "${title}" incomplete`,
+      removeMilestone: (title) => `Remove "${title}"`,
+      markAssignmentDone: (task) => `Mark "${task}" done`,
+      markAssignmentNotDone: (task) => `Mark "${task}" not done`,
+      removeAssignment: (task) => `Remove "${task}"`,
+      dueLabel: (label) => `Due ${label}`,
+      overdueLabel: (label, days) => `${label} · ${days}d overdue`,
+      dueTodayLabel: (label) => `${label} · due today`,
+      daysLeftLabel: (label, days) => `${label} · ${days}d left`,
+      export: 'Export',
+      saveAsImage: 'Save as Image (PNG)',
+      saveAsGif: 'Save as GIF (animated)',
+      copyImage: 'Copy Image to Clipboard',
+      exporting: 'Exporting…',
+      imageCopied: 'Image copied to clipboard.',
+      clipboardUnavailable: 'Clipboard unavailable — image downloaded instead.',
+      shareUnavailableCopied: 'Sharing isn’t available in this browser — image copied. Paste it into WhatsApp, Telegram, or an email.',
+      shareUnavailableDownloaded: 'Sharing isn’t available in this browser — image downloaded instead.',
+      shareText: (title, dateLabel) => `Countdown to ${title} — ${dateLabel}`,
+      documentTitleSuffix: (title) => `${title} — Countdown`,
+      newCountdownTitle: 'New Countdown',
+      editCountdownTitle: 'Edit Countdown',
+      titleLabel: 'Title',
+      titlePlaceholder: "e.g. Sarah's Birthday",
+      dateLabel: 'Date',
+      timeLabel: 'Time',
+      locationLabel: 'Location',
+      locationPlaceholder: "e.g. Grandma's house",
+      optional: '(optional)',
+      notesLabel: 'Notes',
+      notesPlaceholder: 'Anything worth remembering',
+      useCustomColor: 'Use a custom color',
+      autoPickedFromTitle: '(otherwise auto-picked from the title)',
+      cancel: 'Cancel',
+      addEvent: 'Add Event',
+      saveChanges: 'Save Changes',
+      errorEnterTitle: 'Please enter a title.',
+      errorDateTime: 'Please choose both a date and a time.',
+      errorInvalidDate: 'That date/time doesn’t look valid.',
+      defaultEventDescription: 'Countdown event, created from the countdown page.',
+      footer: 'Countdown · local time',
+      langToggle: 'עברית',
+    },
+    he: {
+      locale: 'he-IL',
+      eyebrow: 'ספירה לאחור',
+      targetPrefix: 'מועד —',
+      days: 'ימים', hours: 'שעות', minutes: 'דקות', seconds: 'שניות',
+      itsHere: '🎉 זה כאן!',
+      itsHereMemorial: 'היום הזה כאן',
+      addToCalendar: 'הוספה ליומן',
+      shareFull: 'שיתוף הספירה לאחור',
+      share: 'שיתוף',
+      newCountdown: 'ספירה לאחור חדשה',
+      todayGroup: 'היום',
+      thisWeekGroup: 'השבוע',
+      laterGroup: 'בהמשך',
+      pastCount: (n) => `עבר (${n})`,
+      editEvent: (title) => `עריכת "${title}"`,
+      deleteEvent: (title) => `מחיקת "${title}"`,
+      confirmDeleteEvent: (title) => `למחוק את "${title}"?`,
+      milestones: 'אבני דרך',
+      addMilestone: 'הוספת אבן דרך',
+      addMilestonePlaceholder: 'הוספת אבן דרך…',
+      dueDateOptional: 'תאריך יעד (לא חובה)',
+      cancelAddingMilestone: 'ביטול הוספת אבן דרך',
+      assignments: 'משימות',
+      addAssignment: 'הוספת משימה',
+      whoPlaceholder: 'למי…',
+      whatToDoPlaceholder: 'מה לעשות…',
+      cancelAddingAssignment: 'ביטול הוספת משימה',
+      markMilestoneComplete: (title) => `סמן את "${title}" כהושלם`,
+      markMilestoneIncomplete: (title) => `סמן את "${title}" כלא הושלם`,
+      removeMilestone: (title) => `הסרת "${title}"`,
+      markAssignmentDone: (task) => `סמן את "${task}" כבוצע`,
+      markAssignmentNotDone: (task) => `סמן את "${task}" כלא בוצע`,
+      removeAssignment: (task) => `הסרת "${task}"`,
+      dueLabel: (label) => `יעד ${label}`,
+      overdueLabel: (label, days) => `${label} · באיחור של ${days} ימים`,
+      dueTodayLabel: (label) => `${label} · היעד היום`,
+      daysLeftLabel: (label, days) => `${label} · נותרו ${days} ימים`,
+      export: 'ייצוא',
+      saveAsImage: 'שמירה כתמונה (PNG)',
+      saveAsGif: 'שמירה כ-GIF (אנימציה)',
+      copyImage: 'העתקת התמונה ללוח',
+      exporting: 'מייצא…',
+      imageCopied: 'התמונה הועתקה ללוח.',
+      clipboardUnavailable: 'הלוח אינו זמין — התמונה הורדה במקום זאת.',
+      shareUnavailableCopied: 'שיתוף לא נתמך בדפדפן הזה — התמונה הועתקה. ניתן להדביק אותה בוואטסאפ, בטלגרם או במייל.',
+      shareUnavailableDownloaded: 'שיתוף לא נתמך בדפדפן הזה — התמונה הורדה במקום זאת.',
+      shareText: (title, dateLabel) => `ספירה לאחור ל-${title} — ${dateLabel}`,
+      documentTitleSuffix: (title) => `${title} — ספירה לאחור`,
+      newCountdownTitle: 'ספירה לאחור חדשה',
+      editCountdownTitle: 'עריכת ספירה לאחור',
+      titleLabel: 'כותרת',
+      titlePlaceholder: 'למשל, יום ההולדת של שרה',
+      dateLabel: 'תאריך',
+      timeLabel: 'שעה',
+      locationLabel: 'מיקום',
+      locationPlaceholder: 'למשל, בית סבתא',
+      optional: '(לא חובה)',
+      notesLabel: 'הערות',
+      notesPlaceholder: 'כל דבר ששווה לזכור',
+      useCustomColor: 'שימוש בצבע מותאם אישית',
+      autoPickedFromTitle: '(אחרת יבחר אוטומטית לפי הכותרת)',
+      cancel: 'ביטול',
+      addEvent: 'הוספת אירוע',
+      saveChanges: 'שמירת שינויים',
+      errorEnterTitle: 'יש להזין כותרת.',
+      errorDateTime: 'יש לבחור תאריך ושעה.',
+      errorInvalidDate: 'התאריך/השעה שהוזנו לא תקינים.',
+      defaultEventDescription: 'אירוע ספירה לאחור, שנוצר מעמוד הספירה לאחור.',
+      footer: 'ספירה לאחור · שעון מקומי',
+      langToggle: 'English',
+    },
+  };
+
+  let currentLang = document.documentElement.lang === 'he' ? 'he' : 'en';
+
+  function t(key, ...args){
+    const dict = STRINGS[currentLang] || STRINGS.en;
+    const entry = dict[key] !== undefined ? dict[key] : STRINGS.en[key];
+    return typeof entry === 'function' ? entry(...args) : entry;
+  }
+
+  function applyStaticTranslations(){
+    document.querySelectorAll('[data-i18n]').forEach((el) => {
+      el.textContent = t(el.getAttribute('data-i18n'));
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
+      el.setAttribute('placeholder', t(el.getAttribute('data-i18n-placeholder')));
+    });
+    document.querySelectorAll('[data-i18n-aria-label]').forEach((el) => {
+      el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria-label')));
+    });
+    document.querySelectorAll('[data-i18n-title]').forEach((el) => {
+      el.setAttribute('title', t(el.getAttribute('data-i18n-title')));
+    });
+  }
+
+  // Re-applies translations plus every already-rendered dynamic string
+  // (events menu, active event, milestones, assignments) so a language
+  // switch after first render still reaches content drawn before it.
+  function applyLanguage(lang){
+    currentLang = lang === 'he' ? 'he' : 'en';
+    document.documentElement.lang = currentLang;
+    document.documentElement.dir = currentLang === 'he' ? 'rtl' : 'ltr';
+    try { localStorage.setItem(STORAGE_LANG, currentLang); } catch (err){ /* localStorage unavailable */ }
+    applyStaticTranslations();
+    const toggleBtn = document.getElementById('langToggle');
+    if (toggleBtn) toggleBtn.textContent = t('langToggle');
+    renderEventsMenu();
+    applyActiveEvent();
+  }
 
   function defaultEvents(){
     return [{
@@ -1862,8 +2095,8 @@
     renderAssignments();
 
     els.title.textContent = ev.title;
-    document.title = `${ev.title} — Countdown`;
-    els.targetLabel.textContent = targetDate.toLocaleString(undefined, {
+    document.title = t('documentTitleSuffix', ev.title);
+    els.targetLabel.textContent = targetDate.toLocaleString(t('locale'), {
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
       hour: '2-digit', minute: '2-digit'
     });
@@ -1903,7 +2136,7 @@
         els.seconds.textContent = '00';
         els.progress.style.width = '100%';
         els.grid.style.opacity = '0.35';
-        els.done.textContent = document.body.dataset.theme === 'memorial' ? 'The day is here' : "🎉 It's here!";
+        els.done.textContent = document.body.dataset.theme === 'memorial' ? t('itsHereMemorial') : t('itsHere');
         els.done.style.display = 'block';
         setTimeStage('time-close');
         if (!confettiFired){
@@ -1948,7 +2181,7 @@
   const eventsPanelAddBtn = document.getElementById('eventsPanelAddBtn');
 
   function formatChipDate(iso){
-    return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    return new Date(iso).toLocaleDateString(t('locale'), { month: 'short', day: 'numeric' });
   }
 
   // Calendar-day distance (not a raw ms diff), so "today" and "this week"
@@ -2016,7 +2249,7 @@
     edit.className = 'event-row-edit';
     edit.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 3.5l4 4L8 20H4v-4z"/></svg>';
     edit.setAttribute('role', 'button');
-    edit.setAttribute('aria-label', `Edit "${ev.title}"`);
+    edit.setAttribute('aria-label', t('editEvent', ev.title));
     edit.addEventListener('click', (e) => {
       e.stopPropagation();
       closeEventsPanel();
@@ -2029,7 +2262,7 @@
       del.className = 'event-row-delete';
       del.textContent = '×';
       del.setAttribute('role', 'button');
-      del.setAttribute('aria-label', `Delete "${ev.title}"`);
+      del.setAttribute('aria-label', t('deleteEvent', ev.title));
       del.addEventListener('click', (e) => {
         e.stopPropagation();
         deleteEvent(ev.id);
@@ -2076,15 +2309,15 @@
     past.sort(byDateDesc);
 
     eventsPanelList.innerHTML = '';
-    if (today.length) eventsPanelList.appendChild(buildEventGroup('Today', today));
-    if (thisWeek.length) eventsPanelList.appendChild(buildEventGroup('This week', thisWeek));
-    if (later.length) eventsPanelList.appendChild(buildEventGroup('Later', later));
+    if (today.length) eventsPanelList.appendChild(buildEventGroup(t('todayGroup'), today));
+    if (thisWeek.length) eventsPanelList.appendChild(buildEventGroup(t('thisWeekGroup'), thisWeek));
+    if (later.length) eventsPanelList.appendChild(buildEventGroup(t('laterGroup'), later));
 
     if (past.length){
       const details = document.createElement('details');
       details.className = 'events-past';
       const summary = document.createElement('summary');
-      summary.textContent = `Past (${past.length})`;
+      summary.textContent = t('pastCount', past.length);
       details.appendChild(summary);
       details.appendChild(buildEventGroup(null, past));
       eventsPanelList.appendChild(details);
@@ -2094,7 +2327,7 @@
   function deleteEvent(id){
     const ev = events.find((e) => e.id === id);
     if (!ev || events.length <= 1) return;
-    if (!confirm(`Delete "${ev.title}"?`)) return;
+    if (!confirm(t('confirmDeleteEvent', ev.title))) return;
 
     events = events.filter((e) => e.id !== id);
     saveEvents();
@@ -2127,8 +2360,8 @@
       const ev = events.find((e) => e.id === editingEventId);
       const d = new Date(ev.date);
 
-      modalTitleEl.textContent = 'Edit Countdown';
-      submitEventBtn.textContent = 'Save Changes';
+      modalTitleEl.textContent = t('editCountdownTitle');
+      submitEventBtn.textContent = t('saveChanges');
       document.getElementById('newEventTitle').value = ev.title;
       document.getElementById('newEventDate').value = `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
       document.getElementById('newEventTime').value = `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
@@ -2139,8 +2372,8 @@
       newEventColorInput.value = ev.customColor || '#a855f7';
     } else {
       addEventForm.reset();
-      modalTitleEl.textContent = 'New Countdown';
-      submitEventBtn.textContent = 'Add Event';
+      modalTitleEl.textContent = t('newCountdownTitle');
+      submitEventBtn.textContent = t('addEvent');
       newEventColorInput.disabled = true;
     }
 
@@ -2175,11 +2408,11 @@
     const customColor = useCustomColor ? document.getElementById('newEventColor').value : null;
 
     if (!title){
-      formError.textContent = 'Please enter a title.';
+      formError.textContent = t('errorEnterTitle');
       return;
     }
     if (!dateStr || !timeStr){
-      formError.textContent = 'Please choose both a date and a time.';
+      formError.textContent = t('errorDateTime');
       return;
     }
 
@@ -2188,11 +2421,11 @@
     const targetDate = new Date(y, mo - 1, d, h, mi, 0);
 
     if (isNaN(targetDate.getTime())){
-      formError.textContent = 'That date/time doesn’t look valid.';
+      formError.textContent = t('errorInvalidDate');
       return;
     }
 
-    const description = notes || 'Countdown event, created from the countdown page.';
+    const description = notes || t('defaultEventDescription');
 
     if (editingEventId){
       const ev = events.find((e) => e.id === editingEventId);
@@ -2273,12 +2506,12 @@
 
   function formatMilestoneDue(m){
     if (!m.dueDate) return null;
-    const label = new Date(m.dueDate + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-    if (m.completed) return { text: `Due ${label}`, cls: '' };
+    const label = new Date(m.dueDate + 'T00:00:00').toLocaleDateString(t('locale'), { month: 'short', day: 'numeric' });
+    if (m.completed) return { text: t('dueLabel', label), cls: '' };
     const days = daysUntil(m.dueDate);
-    if (days < 0) return { text: `${label} · ${Math.abs(days)}d overdue`, cls: 'overdue' };
-    if (days === 0) return { text: `${label} · due today`, cls: 'due-today' };
-    return { text: `${label} · ${days}d left`, cls: '' };
+    if (days < 0) return { text: t('overdueLabel', label, Math.abs(days)), cls: 'overdue' };
+    if (days === 0) return { text: t('dueTodayLabel', label), cls: 'due-today' };
+    return { text: t('daysLeftLabel', label, days), cls: '' };
   }
 
   function renderMilestones(){
@@ -2292,7 +2525,7 @@
       const check = document.createElement('button');
       check.type = 'button';
       check.className = 'milestone-check';
-      check.setAttribute('aria-label', m.completed ? `Mark "${m.title}" incomplete` : `Mark "${m.title}" complete`);
+      check.setAttribute('aria-label', m.completed ? t('markMilestoneIncomplete', m.title) : t('markMilestoneComplete', m.title));
       check.innerHTML = m.completed
         ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>'
         : '';
@@ -2321,7 +2554,7 @@
       del.className = 'milestone-delete';
       del.textContent = '×';
       del.setAttribute('role', 'button');
-      del.setAttribute('aria-label', `Remove "${m.title}"`);
+      del.setAttribute('aria-label', t('removeMilestone', m.title));
       del.addEventListener('click', () => deleteMilestone(m.id));
       item.appendChild(del);
 
@@ -2410,7 +2643,7 @@
       const check = document.createElement('button');
       check.type = 'button';
       check.className = 'milestone-check';
-      check.setAttribute('aria-label', a.completed ? `Mark "${a.task}" not done` : `Mark "${a.task}" done`);
+      check.setAttribute('aria-label', a.completed ? t('markAssignmentNotDone', a.task) : t('markAssignmentDone', a.task));
       check.innerHTML = a.completed
         ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>'
         : '';
@@ -2436,7 +2669,7 @@
       del.className = 'milestone-delete';
       del.textContent = '×';
       del.setAttribute('role', 'button');
-      del.setAttribute('aria-label', `Remove "${a.task}"`);
+      del.setAttribute('aria-label', t('removeAssignment', a.task));
       del.addEventListener('click', () => deleteAssignment(a.id));
       item.appendChild(del);
 
@@ -2479,8 +2712,7 @@
     renderAssignments();
   });
 
-  renderEventsMenu();
-  applyActiveEvent();
+  applyLanguage(currentLang);
 
   // ---- Add to Calendar ----
   function downloadICS(){
@@ -2743,7 +2975,7 @@
     const shareData = {
       files: [file],
       title: currentEvent.title,
-      text: `Countdown to ${currentEvent.title} — ${els.targetLabel.textContent}`,
+      text: t('shareText', currentEvent.title, els.targetLabel.textContent),
     };
 
     if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })){
@@ -2757,11 +2989,7 @@
     }
 
     const copied = await copyImageToClipboard();
-    showToast(
-      copied
-        ? 'Sharing isn’t available in this browser — image copied. Paste it into WhatsApp, Telegram, or an email.'
-        : 'Sharing isn’t available in this browser — image downloaded instead.'
-    );
+    showToast(copied ? t('shareUnavailableCopied') : t('shareUnavailableDownloaded'));
   }
 
   // -- Minimal self-contained GIF89a encoder --
@@ -2984,22 +3212,27 @@
   }
 
   document.getElementById('exportPngBtn').addEventListener('click', () => {
-    withBusyExport('Exporting…', exportAsPNG);
+    withBusyExport(t('exporting'), exportAsPNG);
   });
 
   document.getElementById('exportGifBtn').addEventListener('click', () => {
-    withBusyExport('Exporting…', exportAsGIF);
+    withBusyExport(t('exporting'), exportAsGIF);
   });
 
   document.getElementById('copyImageBtn').addEventListener('click', () => {
-    withBusyExport('Exporting…', async () => {
+    withBusyExport(t('exporting'), async () => {
       const copied = await copyImageToClipboard();
-      showToast(copied ? 'Image copied to clipboard.' : 'Clipboard unavailable — image downloaded instead.');
+      showToast(copied ? t('imageCopied') : t('clipboardUnavailable'));
     });
   });
 
   document.getElementById('shareBtn').addEventListener('click', () => {
     withBusyButton(document.getElementById('shareBtn'), shareImage);
+  });
+
+  const langToggleBtn = document.getElementById('langToggle');
+  langToggleBtn.addEventListener('click', () => {
+    applyLanguage(currentLang === 'en' ? 'he' : 'en');
   });
 </script>
 </body>
