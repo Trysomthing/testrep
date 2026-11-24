@@ -61,6 +61,12 @@ and UI can be reviewed before any backend is built. It's local-only —
 one browser, no real invites sent, no second device involved — see
 `REQUIREMENTS.md` for exactly what it does and doesn't do.
 
+Guests and bring-items are now rendered as **one combined panel**
+(bring-items nest under the guest who's bringing them; anything
+unclaimed sits in its own sub-list) rather than two separate lists,
+and the old Milestones panel is hidden — both changes narrow the demo
+toward the organizer-facing surface this concept is actually for.
+
 ## Beyond MVP — defer or drop
 
 - **Push notifications** (installed PWA) and **WhatsApp/SMS
