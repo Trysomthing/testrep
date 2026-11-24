@@ -281,14 +281,19 @@ nothing here talks to a server. Its purpose is to let the shape of the
 data and UI be reviewed before the real backend (shareable event link,
 email invites, scheduled reminders) is built.
 
-- Each event has a `guests` array: `{ id, name, rsvp }`, where `rsvp` is
-  one of `pending` / `going` / `maybe` / `declined`.
+- Each event has a `guests` array: `{ id, name, email, rsvp }`, where
+  `rsvp` is one of `pending` / `going` / `maybe` / `declined`. `email` is
+  optional and purely illustrative here — nothing in this preview sends
+  mail; it exists so the data shape matches what the real backend in
+  `MVP.md` needs (a guest's contact info) and the gap between "the demo
+  only needs a name" and "the real thing needs a way to reach people"
+  is visible rather than hidden.
 - Same chromeless panel pattern as Milestones/Assignments (reusing the
   same CSS): hidden chrome with just a "+ Add guest" button when there
   are no guests and the add form is closed; full panel once there's a
   guest or the form is open.
-- Adding a guest asks only for a name (no email/phone — that capture step
-  is part of the real RSVP flow in `MVP.md`, not this preview).
+- Adding a guest asks for a name (required) and an email (optional);
+  the email, if given, shows as a small muted line under the name.
   New guests start as `pending`.
   - Each row shows the guest's name and a colored RSVP badge
   (Pending / Going / Maybe / Can't go). Tapping the badge cycles it to the

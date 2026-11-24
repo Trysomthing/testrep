@@ -38,8 +38,12 @@ https://claude.ai/artifact/Nqf9HFLT9Tw5WU9yQaoLAw
 4. **"What to bring" claiming.** Extends the existing Assignments
    feature so items can be left unassigned and a guest can claim one
    from the link, not just the organizer assigning by name.
-5. **Guest contact capture.** An email (and optionally phone) collected
-   at RSVP time — the only way to reach people later.
+5. **Guest contact capture.** Two paths, both supported: the organizer
+   types a name + email up front (simple for a short list), or the
+   organizer just shares one generic event link and each guest fills in
+   their own name + email when they RSVP (simpler for most small
+   events — no pre-entry needed). Either way, email is the only way to
+   reach people later.
 6. **Scheduled reminders, email-only to start.** Fires at fixed offsets
    (1 week / 1 day / day-of) to guests, and separately to the organizer
    ("3 people haven't responded yet").

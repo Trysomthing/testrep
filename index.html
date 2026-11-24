@@ -494,7 +494,8 @@
     font-family:inherit;
     font-size:13px;
   }
-  .milestone-add-row input[type="text"]{ flex:1; min-width:0; }
+  .milestone-add-row input[type="text"],
+  .milestone-add-row input[type="email"]{ flex:1; min-width:0; }
   .milestone-add-row input[type="date"]{
     flex:0 0 auto;
     width:132px;
@@ -1210,7 +1211,8 @@
     .grid{ gap:8px; }
     .card{ border-radius:16px; }
     .milestone-add-row{ flex-wrap:wrap; }
-    .milestone-add-row input[type="text"]{ flex-basis:100%; }
+    .milestone-add-row input[type="text"],
+    .milestone-add-row input[type="email"]{ flex-basis:100%; }
     .milestone-add-row input[type="date"]{ flex:1; width:auto; }
   }
 
@@ -1379,6 +1381,7 @@
       </button>
       <form class="milestone-add-row" id="addGuestForm" hidden>
         <input id="newGuestName" type="text" data-i18n-placeholder="guestNamePlaceholder" placeholder="Guest name…" maxlength="40" autocomplete="off">
+        <input id="newGuestEmail" type="email" data-i18n-placeholder="guestEmailPlaceholder" placeholder="Email (optional, for when invites are real)…" maxlength="80" autocomplete="off">
         <button type="submit" class="milestone-add-btn" data-i18n-aria-label="addGuest" aria-label="Add guest">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
         </button>
@@ -1522,6 +1525,7 @@
       guests: 'Guests',
       addGuest: 'Add guest',
       guestNamePlaceholder: 'Guest name…',
+      guestEmailPlaceholder: 'Email (optional, for when invites are real)…',
       cancelAddingGuest: 'Cancel adding a guest',
       removeGuest: (name) => `Remove "${name}"`,
       rsvpPending: 'Pending',
@@ -1607,6 +1611,7 @@
       guests: 'אורחים',
       addGuest: 'הוספת אורח',
       guestNamePlaceholder: 'שם האורח/ת…',
+      guestEmailPlaceholder: 'אימייל (לא חובה, לקראת ההזמנות האמיתיות)…',
       cancelAddingGuest: 'ביטול הוספת אורח',
       removeGuest: (name) => `הסרת "${name}"`,
       rsvpPending: 'ממתין',
@@ -1722,8 +1727,8 @@
         { id: 'm-seed-4', title: 'Rehearsal dinner', completed: false, dueDate: '2026-10-02' },
       ],
       guests: [
-        { id: 'g-seed-1', name: 'Noa', rsvp: 'going' },
-        { id: 'g-seed-2', name: 'Dan', rsvp: 'maybe' },
+        { id: 'g-seed-1', name: 'Noa', email: 'noa@example.com', rsvp: 'going' },
+        { id: 'g-seed-2', name: 'Dan', email: '', rsvp: 'maybe' },
       ],
       assignments: [
         { id: 'a-seed-1', person: 'Mom', task: 'Bring extra folding chairs', completed: false },
@@ -2716,6 +2721,7 @@
   const guestsCountEl = document.getElementById('guestsCount');
   const addGuestForm = document.getElementById('addGuestForm');
   const newGuestNameInput = document.getElementById('newGuestName');
+  const newGuestEmailInput = document.getElementById('newGuestEmail');
   const guestAddToggle = document.getElementById('guestAddToggle');
   const cancelGuestBtn = document.getElementById('cancelGuestBtn');
   const RSVP_CYCLE = ['pending', 'going', 'maybe', 'declined'];
@@ -2758,6 +2764,14 @@
       label.className = 'milestone-label';
       label.textContent = g.name;
       main.appendChild(label);
+
+      if (g.email){
+        const emailEl = document.createElement('span');
+        emailEl.className = 'milestone-due';
+        emailEl.textContent = g.email;
+        main.appendChild(emailEl);
+      }
+
       item.appendChild(main);
 
       const statusLabel = t(RSVP_LABEL_KEY[g.rsvp] || 'rsvpPending');
@@ -2803,11 +2817,13 @@
   addGuestForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const name = newGuestNameInput.value.trim();
+    const email = newGuestEmailInput.value.trim();
     if (!name) return;
     if (!currentEvent.guests) currentEvent.guests = [];
     currentEvent.guests.push({
       id: `g-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       name,
+      email,
       rsvp: 'pending',
     });
     saveEvents();
