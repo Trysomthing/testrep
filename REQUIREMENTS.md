@@ -170,6 +170,16 @@ storage beyond the event object):
 
 ### Milestones checklist
 
+**Currently hidden from the UI** (the `#milestones` panel has the `hidden`
+attribute in `index.html` — deliberate and easily reversed, same pattern
+as Export, not a deleted feature). Hidden in favor of the merged
+Guests + bring-items panel below, which is the organizer-facing surface
+this app is actually being built toward (see `MVP.md`); milestones is
+private planning that doesn't fit that surface. The data, the code, and
+the decorations it drives (next section) are all unchanged and still
+live — only the panel's visibility changed. Re-enable by dropping
+`hidden` from `#milestones` in `index.html`.
+
 - Each event has a `milestones` array: `{ id, title, completed, dueDate }`.
   `dueDate` is an optional `YYYY-MM-DD` string.
 - A "Milestones" panel (between the progress bar and the Add to
@@ -235,34 +245,60 @@ are all hidden during Image/GIF export (same mechanism as the existing
 export hide-list) — the decoration motifs baked into the illustration
 itself are *not* hidden, since they're part of the artwork being exported.
 
-## Assignments
+## Guests + bring-items — local preview, not yet shareable
 
-A second panel, right below Milestones, for delegating tasks to specific
-people — e.g. after sharing the countdown with family/friends, "assign"
-someone a job rather than tracking your own to-dos.
+One combined panel (right below the progress bar, where Milestones used
+to show) for "who's coming and what they're bringing" — the organizer-
+facing surface this app is being built toward, per `MVP.md`.
+**This is a local-only mockup**: it does not send invites, does not
+involve a second device or browser, and nothing here talks to a server.
+Its purpose is to let the shape of the data and UI be reviewed before the
+real backend (shareable event link, email invites, scheduled reminders)
+is built. Two underlying data arrays, rendered as one list:
 
-- Each event has an `assignments` array: `{ id, person, task, completed }`.
-  `person` is freeform text (no contact list/picker — just a name typed in)
-  and `task` is what they're meant to do.
-- Structurally and visually a twin of the Milestones panel, down to reusing
-  the same CSS classes: a `done/total` counter, a checkbox per row to mark
-  an assignment done/not-done, a "×" to delete one, and the same
-  show-only-when-there's-something-to-show behavior — no bordered panel
-  chrome at all when there are zero assignments and the add form is
-  closed, just a plain "+ Add assignment" button (sitting directly under
-  "+ Add milestone"). The panel (and its header/border) reappears once
-  there's an assignment or the add form is open, same rules as Milestones.
-- Adding one asks for two fields: who (`person`) and what (`task`); both
-  are required. No due date (unlike milestones) — kept deliberately
-  simple for now.
-- Each row shows the task as the primary (bold) line and the assigned
-  person as the secondary line underneath — you're scanning for what
-  needs doing first, who's doing it second.
-- The seed event ships with 2 example assignments (1 already completed);
-  a newly-created event starts with none.
-- Unlike milestones, assignments do **not** drive the illustration
-  decorations or any other gamification — they're a separate, independent
-  checklist.
+- Each event has a `guests` array: `{ id, name, email, rsvp }`, where
+  `rsvp` is one of `pending` / `going` / `maybe` / `declined`. `email` is
+  optional and purely illustrative here — nothing in this preview sends
+  mail; it exists so the data shape matches what the real backend in
+  `MVP.md` needs (a guest's contact info) and the gap between "the demo
+  only needs a name" and "the real thing needs a way to reach people"
+  is visible rather than hidden.
+- Each event also has an `assignments` array: `{ id, person, task,
+  completed }` — a "bring item". `person` is either blank (unclaimed) or
+  must exactly match an existing guest's `name`; there's no free-text
+  "who" field anymore, only a dropdown of current guests plus an
+  "Unclaimed" option, so a name is never typed twice.
+- **Rendering**: each guest's row (name, optional email line, RSVP badge,
+  delete) is followed immediately by any bring-items whose `person`
+  matches that guest's name, shown as smaller nested rows directly
+  underneath. Any bring-item whose `person` is blank, or doesn't match a
+  current guest (e.g. their guest was deleted), appears afterward in a
+  separate "Unclaimed" sub-list with a small uppercase label showing the
+  count.
+- **Claiming**: an unclaimed item shows a "Claim" button; clicking it
+  opens an inline name field + confirm button. Confirming sets `person`
+  to that name, and — this is the actual merge — if no guest with that
+  name exists yet, one is created automatically (RSVP defaulting to
+  `going`, since bringing something implies coming). This is the local
+  stand-in for a guest claiming an item from their own RSVP link once
+  that link exists; there is no real multi-device sharing here yet,
+  claiming only changes data in the current browser.
+- **Deleting a guest** doesn't delete what they were bringing — any
+  matching bring-items fall back into Unclaimed rather than disappearing.
+- Tapping a guest's RSVP badge cycles Pending → Going → Maybe → Can't go
+  → Pending. Tapping a bring-item's checkbox toggles it done/not-done,
+  independent of RSVP status.
+- Same chromeless panel pattern as the rest (reusing the existing CSS):
+  no bordered chrome at all when there are zero guests, zero bring-items,
+  and both add-forms are closed — just two plain buttons, "+ Add guest"
+  and "+ Add something to bring". The panel (and its header/border)
+  reappears once there's a guest, a bring-item, or either form is open.
+- The counter badge shows `{going}/{totalGuests}`.
+- Neither guests nor bring-items drive illustrations/gamification —
+  that's still Milestones' job, even though its panel is hidden.
+- The seed event ships with 3 example guests (two Going, one Maybe) and
+  3 example bring-items (two assigned to guests, one unclaimed); a
+  newly-created event starts with none of either.
 
 ## Top row layout
 
