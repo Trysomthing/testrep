@@ -549,6 +549,61 @@
   .milestone-add-toggle[hidden],
   .milestone-add-row[hidden]{ display:none; }
 
+  /* RSVP status badge (Guests panel) — tap to cycle status */
+  .rsvp-badge{
+    flex-shrink:0;
+    border:none;
+    border-radius:999px;
+    padding:3px 10px;
+    font-size:10.5px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.02em;
+    cursor:pointer;
+    font-family:inherit;
+    color:var(--muted);
+    background:rgba(255,255,255,0.08);
+    transition:background .15s ease, color .15s ease;
+  }
+  .rsvp-badge:hover{ background:rgba(255,255,255,0.16); }
+  .rsvp-badge.rsvp-going{ color:#86efac; background:rgba(134,239,172,0.15); }
+  .rsvp-badge.rsvp-maybe{ color:#fde68a; background:rgba(253,230,138,0.15); }
+  .rsvp-badge.rsvp-declined{ color:#fda4af; background:rgba(253,164,175,0.15); }
+
+  /* Claimable ("open") assignment — nobody picked it up yet */
+  .claim-btn{
+    flex-shrink:0;
+    border:1.5px dashed rgba(255,255,255,0.35);
+    border-radius:999px;
+    padding:3px 10px;
+    font-size:10.5px;
+    font-weight:700;
+    color:var(--muted);
+    background:transparent;
+    cursor:pointer;
+    font-family:inherit;
+    transition:border-color .15s ease, color .15s ease;
+  }
+  .claim-btn:hover{ border-color:var(--text); color:var(--text); }
+  .claim-row{
+    display:flex;
+    gap:6px;
+    align-items:center;
+    flex-shrink:0;
+  }
+  .claim-row input{
+    width:84px;
+    min-width:0;
+    padding:3px 8px;
+    border-radius:999px;
+    border:1.5px solid rgba(255,255,255,0.35);
+    background:rgba(0,0,0,0.2);
+    color:var(--text);
+    font-size:10.5px;
+    font-family:inherit;
+  }
+  .claim-row input:focus{ outline:none; border-color:var(--text); }
+
   .cal-wrap{
     position:relative;
     flex-shrink:0;
@@ -1312,6 +1367,27 @@
       </form>
     </div>
 
+    <div class="milestones" id="guests">
+      <div class="milestones-head">
+        <span class="milestones-title" data-i18n="guests">Guests</span>
+        <span class="milestones-count" id="guestsCount">0/0</span>
+      </div>
+      <div class="milestones-list" id="guestsList"></div>
+      <button type="button" class="milestone-add-toggle" id="guestAddToggle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+        <span data-i18n="addGuest">Add guest</span>
+      </button>
+      <form class="milestone-add-row" id="addGuestForm" hidden>
+        <input id="newGuestName" type="text" data-i18n-placeholder="guestNamePlaceholder" placeholder="Guest name…" maxlength="40" autocomplete="off">
+        <button type="submit" class="milestone-add-btn" data-i18n-aria-label="addGuest" aria-label="Add guest">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+        </button>
+        <button type="button" class="milestone-add-cancel" id="cancelGuestBtn" data-i18n-aria-label="cancelAddingGuest" aria-label="Cancel adding a guest">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+        </button>
+      </form>
+    </div>
+
     <div class="milestones" id="assignments">
       <div class="milestones-head">
         <span class="milestones-title" data-i18n="assignments">Assignments</span>
@@ -1323,7 +1399,7 @@
         <span data-i18n="addAssignment">Add assignment</span>
       </button>
       <form class="milestone-add-row" id="addAssignmentForm" hidden>
-        <input id="newAssignmentPerson" type="text" data-i18n-placeholder="whoPlaceholder" placeholder="Who…" maxlength="40" autocomplete="off">
+        <input id="newAssignmentPerson" type="text" data-i18n-placeholder="whoPlaceholder" placeholder="Who… (optional — leave blank to let anyone claim it)" maxlength="40" autocomplete="off">
         <input id="newAssignmentTask" type="text" data-i18n-placeholder="whatToDoPlaceholder" placeholder="What to do…" maxlength="80" autocomplete="off">
         <button type="submit" class="milestone-add-btn" data-i18n-aria-label="addAssignment" aria-label="Add assignment">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
@@ -1443,11 +1519,24 @@
       addMilestonePlaceholder: 'Add a milestone…',
       dueDateOptional: 'Due date (optional)',
       cancelAddingMilestone: 'Cancel adding a milestone',
+      guests: 'Guests',
+      addGuest: 'Add guest',
+      guestNamePlaceholder: 'Guest name…',
+      cancelAddingGuest: 'Cancel adding a guest',
+      removeGuest: (name) => `Remove "${name}"`,
+      rsvpPending: 'Pending',
+      rsvpGoing: 'Going',
+      rsvpMaybe: 'Maybe',
+      rsvpDeclined: "Can't go",
+      rsvpAriaLabel: (name, status) => `RSVP for ${name}: ${status} — tap to change`,
       assignments: 'Assignments',
       addAssignment: 'Add assignment',
-      whoPlaceholder: 'Who…',
+      whoPlaceholder: 'Who… (optional — leave blank to let anyone claim it)',
       whatToDoPlaceholder: 'What to do…',
       cancelAddingAssignment: 'Cancel adding an assignment',
+      claim: 'Claim',
+      claimPlaceholder: 'Your name…',
+      confirmClaim: 'Confirm claim',
       markMilestoneComplete: (title) => `Mark "${title}" complete`,
       markMilestoneIncomplete: (title) => `Mark "${title}" incomplete`,
       removeMilestone: (title) => `Remove "${title}"`,
@@ -1515,10 +1604,23 @@
       addMilestonePlaceholder: 'הוספת אבן דרך…',
       dueDateOptional: 'תאריך יעד (לא חובה)',
       cancelAddingMilestone: 'ביטול הוספת אבן דרך',
+      guests: 'אורחים',
+      addGuest: 'הוספת אורח',
+      guestNamePlaceholder: 'שם האורח/ת…',
+      cancelAddingGuest: 'ביטול הוספת אורח',
+      removeGuest: (name) => `הסרת "${name}"`,
+      rsvpPending: 'ממתין',
+      rsvpGoing: 'מגיע',
+      rsvpMaybe: 'אולי',
+      rsvpDeclined: 'לא מגיע',
+      rsvpAriaLabel: (name, status) => `אישור הגעה עבור ${name}: ${status} — הקש לשינוי`,
       assignments: 'משימות',
       addAssignment: 'הוספת משימה',
-      whoPlaceholder: 'למי…',
+      whoPlaceholder: 'למי… (לא חובה — השאר ריק כדי שכל אחד יוכל לקחת)',
       whatToDoPlaceholder: 'מה לעשות…',
+      claim: 'קח/י את זה',
+      claimPlaceholder: 'השם שלך…',
+      confirmClaim: 'אישור לקיחה',
       cancelAddingAssignment: 'ביטול הוספת משימה',
       markMilestoneComplete: (title) => `סמן את "${title}" כהושלם`,
       markMilestoneIncomplete: (title) => `סמן את "${title}" כלא הושלם`,
@@ -1619,9 +1721,14 @@
         { id: 'm-seed-3', title: 'Final dress fitting', completed: false, dueDate: '2026-09-28' },
         { id: 'm-seed-4', title: 'Rehearsal dinner', completed: false, dueDate: '2026-10-02' },
       ],
+      guests: [
+        { id: 'g-seed-1', name: 'Noa', rsvp: 'going' },
+        { id: 'g-seed-2', name: 'Dan', rsvp: 'maybe' },
+      ],
       assignments: [
         { id: 'a-seed-1', person: 'Mom', task: 'Bring extra folding chairs', completed: false },
         { id: 'a-seed-2', person: 'Dad', task: 'Pick up the cake', completed: true },
+        { id: 'a-seed-3', person: '', task: 'Bring a dessert', completed: false },
       ],
     }];
   }
@@ -1989,6 +2096,7 @@
 
   function getMilestones(ev){ return (ev && ev.milestones) || []; }
   function getAssignments(ev){ return (ev && ev.assignments) || []; }
+  function getGuests(ev){ return (ev && ev.guests) || []; }
 
   function milestoneProgress(ev){
     const list = getMilestones(ev);
@@ -2091,6 +2199,8 @@
 
     closeMilestoneForm();
     renderMilestones();
+    closeGuestForm();
+    renderGuests();
     closeAssignmentForm();
     renderAssignments();
 
@@ -2599,6 +2709,112 @@
     renderDecorations(currentEvent);
   });
 
+  // ---- Guests: a local preview of RSVP status (no real invites sent yet —
+  // see MVP.md for the planned shareable-link + email version of this) ----
+  const guestsEl = document.getElementById('guests');
+  const guestsListEl = document.getElementById('guestsList');
+  const guestsCountEl = document.getElementById('guestsCount');
+  const addGuestForm = document.getElementById('addGuestForm');
+  const newGuestNameInput = document.getElementById('newGuestName');
+  const guestAddToggle = document.getElementById('guestAddToggle');
+  const cancelGuestBtn = document.getElementById('cancelGuestBtn');
+  const RSVP_CYCLE = ['pending', 'going', 'maybe', 'declined'];
+  const RSVP_LABEL_KEY = { pending: 'rsvpPending', going: 'rsvpGoing', maybe: 'rsvpMaybe', declined: 'rsvpDeclined' };
+
+  function updateGuestsPanelVisibility(){
+    const hasGuests = getGuests(currentEvent).length > 0;
+    const formOpen = !addGuestForm.hidden;
+    guestsEl.classList.toggle('chromeless', !hasGuests && !formOpen);
+  }
+
+  function openGuestForm(){
+    guestAddToggle.hidden = true;
+    addGuestForm.hidden = false;
+    updateGuestsPanelVisibility();
+    newGuestNameInput.focus();
+  }
+
+  function closeGuestForm(){
+    addGuestForm.reset();
+    addGuestForm.hidden = true;
+    guestAddToggle.hidden = false;
+    updateGuestsPanelVisibility();
+  }
+
+  guestAddToggle.addEventListener('click', openGuestForm);
+  cancelGuestBtn.addEventListener('click', closeGuestForm);
+
+  function renderGuests(){
+    const list = getGuests(currentEvent);
+    guestsListEl.innerHTML = '';
+
+    list.forEach((g) => {
+      const item = document.createElement('div');
+      item.className = 'milestone-item';
+
+      const main = document.createElement('div');
+      main.className = 'milestone-main';
+      const label = document.createElement('span');
+      label.className = 'milestone-label';
+      label.textContent = g.name;
+      main.appendChild(label);
+      item.appendChild(main);
+
+      const statusLabel = t(RSVP_LABEL_KEY[g.rsvp] || 'rsvpPending');
+      const badge = document.createElement('button');
+      badge.type = 'button';
+      badge.className = `rsvp-badge rsvp-${g.rsvp}`;
+      badge.textContent = statusLabel;
+      badge.setAttribute('aria-label', t('rsvpAriaLabel', g.name, statusLabel));
+      badge.addEventListener('click', () => cycleGuestRsvp(g.id));
+      item.appendChild(badge);
+
+      const del = document.createElement('span');
+      del.className = 'milestone-delete';
+      del.textContent = '×';
+      del.setAttribute('role', 'button');
+      del.setAttribute('aria-label', t('removeGuest', g.name));
+      del.addEventListener('click', () => deleteGuest(g.id));
+      item.appendChild(del);
+
+      guestsListEl.appendChild(item);
+    });
+
+    const going = list.filter((g) => g.rsvp === 'going').length;
+    guestsCountEl.textContent = `${going}/${list.length}`;
+    updateGuestsPanelVisibility();
+  }
+
+  function cycleGuestRsvp(guestId){
+    const g = getGuests(currentEvent).find((x) => x.id === guestId);
+    if (!g) return;
+    const next = RSVP_CYCLE[(RSVP_CYCLE.indexOf(g.rsvp) + 1) % RSVP_CYCLE.length];
+    g.rsvp = next;
+    saveEvents();
+    renderGuests();
+  }
+
+  function deleteGuest(guestId){
+    currentEvent.guests = getGuests(currentEvent).filter((x) => x.id !== guestId);
+    saveEvents();
+    renderGuests();
+  }
+
+  addGuestForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = newGuestNameInput.value.trim();
+    if (!name) return;
+    if (!currentEvent.guests) currentEvent.guests = [];
+    currentEvent.guests.push({
+      id: `g-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      name,
+      rsvp: 'pending',
+    });
+    saveEvents();
+    closeGuestForm();
+    renderGuests();
+  });
+
   // ---- Assignments: tasks delegated to specific people, e.g. after sharing ----
   const assignmentsEl = document.getElementById('assignments');
   const assignmentsListEl = document.getElementById('assignmentsList');
@@ -2658,10 +2874,7 @@
       label.textContent = a.task;
       main.appendChild(label);
 
-      const personEl = document.createElement('span');
-      personEl.className = 'milestone-due';
-      personEl.textContent = a.person;
-      main.appendChild(personEl);
+      main.appendChild(buildAssignmentPersonSlot(a));
 
       item.appendChild(main);
 
@@ -2679,6 +2892,62 @@
     const done = list.filter((a) => a.completed).length;
     assignmentsCountEl.textContent = `${done}/${list.length}`;
     updateAssignmentsPanelVisibility();
+  }
+
+  // An assignment added with no person is "open" — anyone can claim it
+  // from here, standing in for a guest claiming it from their own RSVP
+  // link once that link exists (see MVP.md).
+  function buildAssignmentPersonSlot(a){
+    const wrap = document.createElement('span');
+    wrap.className = 'milestone-due';
+    if (a.person){
+      wrap.textContent = a.person;
+      return wrap;
+    }
+
+    const claimBtn = document.createElement('button');
+    claimBtn.type = 'button';
+    claimBtn.className = 'claim-btn';
+    claimBtn.textContent = t('claim');
+    claimBtn.addEventListener('click', () => {
+      const row = document.createElement('div');
+      row.className = 'claim-row';
+
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.placeholder = t('claimPlaceholder');
+      input.maxLength = 40;
+      input.autocomplete = 'off';
+
+      const confirmBtn = document.createElement('button');
+      confirmBtn.type = 'button';
+      confirmBtn.className = 'milestone-add-btn';
+      confirmBtn.setAttribute('aria-label', t('confirmClaim'));
+      confirmBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg>';
+      confirmBtn.addEventListener('click', () => {
+        const name = input.value.trim();
+        if (!name) return;
+        claimAssignment(a.id, name);
+      });
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter'){ e.preventDefault(); confirmBtn.click(); }
+      });
+
+      row.appendChild(input);
+      row.appendChild(confirmBtn);
+      wrap.replaceChildren(row);
+      input.focus();
+    });
+    wrap.appendChild(claimBtn);
+    return wrap;
+  }
+
+  function claimAssignment(assignmentId, name){
+    const a = getAssignments(currentEvent).find((x) => x.id === assignmentId);
+    if (!a) return;
+    a.person = name;
+    saveEvents();
+    renderAssignments();
   }
 
   function toggleAssignment(assignmentId){
@@ -2699,7 +2968,7 @@
     e.preventDefault();
     const person = newAssignmentPersonInput.value.trim();
     const task = newAssignmentTaskInput.value.trim();
-    if (!person || !task) return;
+    if (!task) return;
     if (!currentEvent.assignments) currentEvent.assignments = [];
     currentEvent.assignments.push({
       id: `a-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,

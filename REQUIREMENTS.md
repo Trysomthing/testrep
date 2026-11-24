@@ -263,6 +263,40 @@ someone a job rather than tracking your own to-dos.
 - Unlike milestones, assignments do **not** drive the illustration
   decorations or any other gamification — they're a separate, independent
   checklist.
+- **Open/claimable items**: `person` may be left blank when adding an
+  assignment (the "Who…" field says so). A blank-person row renders a
+  "Claim" button instead of a name; clicking it opens an inline
+  name field + confirm button, and submitting it sets `person` to that
+  name. This is a local stand-in for a guest claiming a "what to bring"
+  item from their own RSVP link once that link exists — see `MVP.md`.
+  There is no real multi-device sharing here yet: claiming only changes
+  the data in the current browser.
+
+## Guests (RSVP) — local preview, not yet shareable
+
+A third panel, between Milestones and Assignments, previewing the planned
+RSVP surface described in `MVP.md`. **This is a local-only mockup**: it
+does not send invites, does not involve a second device or browser, and
+nothing here talks to a server. Its purpose is to let the shape of the
+data and UI be reviewed before the real backend (shareable event link,
+email invites, scheduled reminders) is built.
+
+- Each event has a `guests` array: `{ id, name, rsvp }`, where `rsvp` is
+  one of `pending` / `going` / `maybe` / `declined`.
+- Same chromeless panel pattern as Milestones/Assignments (reusing the
+  same CSS): hidden chrome with just a "+ Add guest" button when there
+  are no guests and the add form is closed; full panel once there's a
+  guest or the form is open.
+- Adding a guest asks only for a name (no email/phone — that capture step
+  is part of the real RSVP flow in `MVP.md`, not this preview).
+  New guests start as `pending`.
+  - Each row shows the guest's name and a colored RSVP badge
+  (Pending / Going / Maybe / Can't go). Tapping the badge cycles it to the
+  next status, in that order, looping back to Pending.
+- The counter badge shows `{going}/{total}`.
+- The seed event ships with 2 example guests (one Going, one Maybe); a
+  newly-created event starts with none.
+- Guests do not drive illustrations/gamification, same as Assignments.
 
 ## Top row layout
 
